@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>厨房 3D 概念渲染 · 原木暖色</title>
+<style>
+  /* ---- 原木暖色主题变量（与 2D 模块同款） ---- */
+  :root{
+    --paper:#EFE7DA; --stage:#D9CBB4; --panel:#F7F1E6; --wood:#8B5E3C;
+    --wood-d:#6B4528; --cream:#FBF6EC; --accent:#B5793B; --ink:#4A3B2A;
+    --line:#D8C7AC; --danger:#C0492E; --ok:#3C8C5A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--paper);}
+  #app{display:grid;grid-template-columns:186px 1fr 300px;grid-template-rows:auto 1fr;height:100vh;}
+
+  /* ---- 顶栏 ---- */
+  #topbar{grid-column:1/4;background:linear-gradient(180deg,var(--wood),var(--wood-d));color:var(--cream);
+    display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:6px 16px;min-height:54px;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:5;}
+  #topbar h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.5px;white-space:nowrap;}
+  #topbar .sub{font-size:11px;opacity:.7;margin-left:-8px;}
+  #topbar .spacer{flex:1;}
+  .tbtn{background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.22);
+    border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .tbtn:hover{background:rgba(255,255,255,.24);}
+  .tbtn.primary{background:var(--accent);border-color:var(--accent);font-weight:600;}
+  #paletteSel{display:flex;gap:5px;align-items:center;}
+  .swatch{width:22px;height:22px;border-radius:6px;border:2px solid rgba(255,255,255,.5);cursor:pointer;}
+  .swatch.on{outline:2px solid var(--cream);outline-offset:1px;}
+
+  /* ---- 左侧构件库 ---- */
+  #toolbar{grid-row:2;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:12px 10px;}
+  #toolbar .grp{font-size:11px;color:var(--accent);font-weight:700;margin:12px 4px 6px;letter-spacing:1px;}
+  #toolbar .grp:first-child{margin-top:0;}
+  .mbtn{display:flex;align-items:center;gap:8px;width:100%;background:var(--cream);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;font-size:13px;color:var(--ink);transition:.12s;}
+  .mbtn:hover{border-color:var(--accent);transform:translateX(2px);}
+  .mbtn .ic{width:18px;height:18px;border-radius:4px;flex:none;}
+  .mbtn .sz{margin-left:auto;font-size:10.5px;color:#9c8a72;}
+
+  /* ---- 中间画布 ---- */
+  #stage{grid-row:2;position:relative;background:linear-gradient(180deg,#E7DCC8,#D2C2A6);overflow:hidden;}
+  #canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none;}
+  #canvas.dragging{cursor:grabbing;}
+  #hint{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(74,59,42,.86);color:var(--cream);
+    font-size:12px;padding:7px 14px;border-radius:20px;pointer-events:none;transition:opacity .4s;white-space:nowrap;}
+  #zoombar{position:absolute;right:12px;bottom:12px;display:flex;gap:6px;}
+  #zoombar button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--cream);
+    cursor:pointer;font-size:16px;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12);}
+
+  /* ---- 右下角俯视小图 ---- */
+  #miniWrap{position:absolute;right:12px;bottom:54px;background:rgba(247,241,230,.94);border:1px solid var(--line);
+    border-radius:10px;padding:6px;box-shadow:0 3px 10px rgba(0,0,0,.18);}
+  #mini{display:block;width:200px;height:200px;cursor:crosshair;touch-action:none;border-radius:6px;}
+  #miniWrap .cap{font-size:10.5px;color:#9c8a72;text-align:center;margin-top:3px;}
+
+  /* ---- 右侧检查面板 ---- */
+  #inspector{grid-row:2;background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:14px;}
+  .card{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px;}
+  .card h3{margin:0 0 9px;font-size:13px;color:var(--accent);letter-spacing:.5px;}
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12.5px;}
+  .row label{color:#7a6a52;width:42px;flex:none;}
+  .row input[type=number]{width:62px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;}
+  .pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11.5px;font-weight:600;color:#fff;}
+  .ibtn{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;color:var(--ink);}
+  .ibtn:hover{border-color:var(--accent);}
+  .ibtn.danger{color:var(--danger);border-color:#e2b6ac;}
+  .muted{color:#9c8a72;font-size:12px;line-height:1.6;}
+  .warnlist{list-style:none;margin:0;padding:0;font-size:12.5px;}
+  .warnlist li{padding:6px 9px;border-radius:6px;margin-bottom:5px;background:#FBEDE9;color:var(--danger);}
+  .warnlist li.good{background:#EAF5EE;color:var(--ok);}
+  .mlist{list-style:none;margin:0;padding:0;font-size:12.5px;max-height:168px;overflow-y:auto;}
+  .mlist li{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;margin-bottom:4px;cursor:pointer;border:1px solid transparent;}
+  .mlist li:hover{background:var(--paper);}
+  .mlist li.on{background:var(--paper);border-color:var(--accent);}
+  .mlist li .sw{width:13px;height:13px;border-radius:3px;flex:none;}
+  .mlist li .nm{flex:1;}
+  .mlist li .dim{font-size:10.5px;color:#9c8a72;}
+
+  /* ---- 弹窗 ---- */
+  .modal{position:fixed;inset:0;background:rgba(40,30,20,.45);display:none;align-items:center;justify-content:center;z-index:20;}
+  .modal.show{display:flex;}
+  .modal .box{background:var(--panel);border-radius:14px;padding:22px;max-width:460px;width:90%;max-height:84vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+  .modal h2{margin:0 0 12px;font-size:17px;color:var(--wood);}
+  .modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+  .modal kbd{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:11px;}
+  .modal ul{padding-left:18px;line-height:1.9;font-size:13px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <h1>🍳 厨房 3D 概念渲染</h1><span class="sub">纯 Canvas · 层高 250cm</span>
+    <div id="paletteSel" title="切换配色"></div>
+    <div class="spacer"></div>
+    <a class="tbtn" href="index.html" style="text-decoration:none" title="装修施工流程与现场监工指南">📖 施工监工</a>
+    <a class="tbtn" href="materials-contract.html" style="text-decoration:none" title="选材决策与合同避坑指南">选材合同</a>
+    <a class="tbtn" href="materials-standards.html" style="text-decoration:none" title="材料/五金/门板标准与选购">🧱 材料标准</a>
+    <a class="tbtn" href="materials-list.html" style="text-decoration:none" title="全屋材料清单·规格与标准">🧾 材料清单</a>
+    <a class="tbtn" href="contract.html" style="text-decoration:none" title="装修合同成稿">📝 装修合同</a>
+    <a class="tbtn" href="kitchen-planner.html" style="text-decoration:none" title="2D 平面规划器">📐 平面图</a>
+    <a class="tbtn" href="kitchen-design.html" style="text-decoration:none" title="定稿设计方案与现场复核清单">📋 设计方案</a>
+    <button class="tbtn" id="btnReset">复位视角</button>
+    <button class="tbtn primary" id="btnSetDefault" title="把当前布局存为默认；之后「恢复默认」和换设备首次打开都会用它">设为默认</button>
+    <button class="tbtn" id="btnRestoreDefault" title="把当前布局还原成已保存的默认（默认本身不变）">恢复默认</button>
+    <button class="tbtn" id="btnClear">清空布局</button>
+    <button class="tbtn" id="btnImport">导入 2D-JSON</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+    <button class="tbtn primary" id="btnPng">导出 PNG</button>
+    <button class="tbtn" id="btnHelp">?</button>
+  </header>
+
+  <aside id="toolbar"></aside>
+
+  <main id="stage">
+    <canvas id="canvas"></canvas>
+    <div id="hint">拖拽空白处转动视角 · 滚轮缩放 · 点击盒子选中 · 右下角俯视图拖拽改位置</div>
+    <div id="zoombar">
+      <button id="zoomOut">−</button><button id="zoomIn">+</button>
+    </div>
+    <div id="miniWrap">
+      <canvas id="mini" width="200" height="200"></canvas>
+      <div class="cap">俯视图：拖拽改位置</div>
+    </div>
+  </main>
+
+  <aside id="inspector">
+    <div class="card" id="selCard"><h3>构件属性</h3><div id="selBody" class="muted">未选中构件。点 3D 盒子或下方列表来编辑。</div></div>
+    <div class="card"><h3>配色方案</h3><div id="palBody" class="muted"></div></div>
+    <div class="card"><h3>构件列表</h3><ul class="mlist" id="listBody"></ul></div>
+    <div class="card"><h3>冲突检查</h3><ul class="warnlist" id="warnBody"></ul></div>
+    <div class="card"><h3>房间信息</h3><div id="roomBody" class="muted"></div></div>
+  </aside>
+</div>
+
+<!-- 帮助弹窗 -->
+<div class="modal" id="helpModal"><div class="box">
+  <h2>怎么用</h2>
+  <ul>
+    <li><b>转动视角</b>：在 3D 空白处按住拖动（改方位角 / 仰角）</li>
+    <li><b>缩放</b>：鼠标滚轮拉近 / 推远</li>
+    <li><b>选中</b>：点击 3D 盒子，或点右侧「构件列表」条目</li>
+    <li><b>移动</b>：右下角俯视图里拖拽矩形改 X/Y（自动吸附墙体 / 邻柜）</li>
+    <li><b>微调</b>：选中后方向键移动 1cm（按住 <kbd>Shift</kbd> 移 5cm）</li>
+    <li><b>尺寸</b>：右侧属性面板改 宽W / 深D / 高H / 离地</li>
+    <li><b>旋转</b>：选中后按 <kbd>R</kbd> 或属性面板按钮（每次 90°）</li>
+    <li><b>删除</b>：选中后按 <kbd>Del</kbd> / <kbd>⌫</kbd></li>
+  </ul>
+  <p class="muted">层高固定 <b>250cm</b>（与平面规划器一致）。数据自动存本机；
+  「<b>设为默认</b>」把当前布局存为默认，「<b>恢复默认</b>」一键还原到它（默认不随之后的改动而变；清浏览器数据会丢失该默认）；
+  「导入 2D-JSON」可读入平面规划器导出的 .json，高度按类型默认值生成、可再调。</p>
+  <div class="foot"><button class="tbtn primary" id="helpClose">知道了</button></div>
+</div></div>
+
+<script>
+"use strict";
+// =====================================================================
+// 厨房 3D 概念渲染 —— 纯 Canvas 2D 自写 3D，零外部依赖，可离线 file:// 打开
+// 世界坐标：X=宽(0..bottom)、Y=进深(0..right)、Z=高(0..250)
+// 与 2D 模块（kitchen-planner.html）共用 MODULE_TYPES / PALETTES / DEFAULT_ROOM / footprint
+// =====================================================================
+
+// ===================== 配置数据（抄准 2D，保证坐标/数据一致） =====================
+
+// 构件类型库（俯视尺寸 cm；layer=floor 落地 / upper 吊装；role 用于取色分类）
+const MODULE_TYPES = {
+  base:    {label:'底柜',    w:60,  d:60, layer:'floor', role:'cabinet'},
+  tall:    {label:'高柜',    w:60,  d:60, layer:'floor', role:'cabinet'},
+  tower:   {label:'电器塔柜',w:60,  d:60, layer:'floor', role:'cabinet'},
+  drawer:  {label:'抽屉柜',  w:60,  d:60, layer:'floor', role:'cabinet'},
+  corner:  {label:'转角柜',  w:46,  d:54, layer:'floor', role:'cabinet'},
+  counter: {label:'操作台',  w:60,  d:60, layer:'floor', role:'counter'},
+  island:  {label:'岛台',    w:120, d:80, layer:'floor', role:'counter'},
+  wall:    {label:'吊柜',    w:60,  d:35, layer:'upper', role:'cabinet'},
+  sink:    {label:'水槽',    w:60,  d:60, layer:'floor', role:'sink'},
+  cooktop: {label:'灶台',    w:70,  d:60, layer:'floor', role:'cooktop'},
+  fridge:  {label:'冰箱',    w:70,  d:70, layer:'floor', role:'fridge'},
+  dish:    {label:'洗碗机',  w:45,  d:60, layer:'floor', role:'appliance'},
+  oven:    {label:'烤箱',    w:60,  d:60, layer:'floor', role:'appliance'},
+  micro:   {label:'微波炉',  w:50,  d:40, layer:'upper', role:'appliance'},
+  hood:    {label:'油烟机',  w:90,  d:50, layer:'upper', role:'appliance'},
+};
+const TOOL_GROUPS = [
+  {name:'柜体', types:['base','drawer','tall','tower','corner','counter','island','wall']},
+  {name:'水 · 灶 · 电器', types:['sink','cooktop','hood','fridge','dish','oven','micro']},
+];
+
+// 3D 高度默认表（单位 cm；层高=250）。h=构件自身高度，baseZ=底面离地高度，顶面=baseZ+h
+const DEFAULT_H     = {base:83, tall:220, tower:220, drawer:83, corner:95, counter:83, island:90, wall:70,  sink:95, cooktop:83, fridge:185, dish:95, oven:60, micro:35, hood:33};
+const DEFAULT_BASEZ = {base:0,  tall:0,   tower:0,    drawer:0,  corner:0,  counter:0,  island:0,  wall:150, sink:0,  cooktop:0,  fridge:0,   dish:0,  oven:85, micro:150, hood:152};
+
+// 原木暖色配色方案（直接复用 2D 的颜色键）
+const PALETTES = [
+  {name:'浅橡木', floor:'#EBDCC4', grid:'#E0CDA9', cabinet:'#D8B384', cabinetEdge:'#B98F5E',
+   counter:'#F3ECDD', appliance:'#CDD3D7', applianceEdge:'#9AA2A8', wall:'#C7B59A', line:'#6B5640',
+   text:'#4A3B2A', accent:'#B5793B', flue:'#C9B79A'},
+  {name:'胡桃暖棕', floor:'#D8BD97', grid:'#CBAE83', cabinet:'#8C5E3B', cabinetEdge:'#5E3D22',
+   counter:'#E7D9C0', appliance:'#BCC2C6', applianceEdge:'#8C9296', wall:'#B6A079', line:'#4A3320',
+   text:'#3A2A1A', accent:'#A6612E', flue:'#B59A73'},
+  {name:'枫木米', floor:'#E5D0AA', grid:'#DCC399', cabinet:'#E4C99C', cabinetEdge:'#C2A06F',
+   counter:'#FBF6EC', appliance:'#CFD5D9', applianceEdge:'#9AA2A8', wall:'#CDBC9A', line:'#7A6347',
+   text:'#50402C', accent:'#C08A4A', flue:'#D2BD96'},
+];
+
+// 房间默认参数（用户实测 · L 形）。注意：本模块层高一律 250
+const CEILING = 250;
+const DEFAULT_ROOM = {bottom:218, right:385, flueW:67, flueD:49, doorW:240, doorFromBottom:80, winW:80, winFromLeft:36, ceiling:CEILING};
+const ROOM_FIELDS = [
+  ['bottom','底墙宽'],['right','右墙高(全进深)'],['flueW','烟道宽'],['flueD','烟道深'],
+  ['doorW','门洞宽'],['doorFromBottom','门距底墙'],['winW','窗宽'],['winFromLeft','窗距顶墙左端'],['ceiling','层高'],
+];
+
+// ===================== 房间几何（抄自 2D buildRoom） =====================
+function buildRoom(p){
+  const L = p.right - p.flueD;          // 左墙高
+  const topW = p.bottom - p.flueW;      // 顶墙长
+  const poly = [[0,0],[0,L],[p.flueW,L],[p.flueW,p.right],[p.bottom,p.right],[p.bottom,0]];
+  const flue = {minX:0, minY:L, maxX:p.flueW, maxY:p.right};
+  const door = {x:p.bottom, y0:p.doorFromBottom, y1:p.doorFromBottom+p.doorW};
+  const win  = {y:p.right, x0:p.flueW+p.winFromLeft, x1:p.flueW+p.winFromLeft+p.winW};
+  return {params:p, L, topW, poly, flue, door, win, bounds:{minX:0,minY:0,maxX:p.bottom,maxY:p.right},
+          xLines:[0,p.flueW,p.bottom], yLines:[0,L,p.right]};
+}
+
+// ===================== 向量 / 标量工具（手写，无库） =====================
+const V = {
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  scale:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
+  len:a=>Math.hypot(a[0],a[1],a[2]),
+  norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1; return [a[0]/l,a[1]/l,a[2]/l];},
+};
+
+// ===================== 状态 =====================
+const LS3 = 'kitchen-3d-v4';      // 独立 key，不污染 2D；v4=左墙一字工作流(洗-切-烧直线·水槽移左墙·顶墙窗下备餐)，旧数据自动让位
+const LS3_DEF = LS3 + '-default'; // 用户「设为默认」存的槽：恢复默认 / 换设备首开都优先用它，无此槽才回退写死的 starterModules()
+const LS2 = 'kitchen-planner-v1'; // 仅用于「从 2D 衔接」时按钮提示，不写
+let state = null, room = null;
+
+// 球面相机：az 方位角 / el 仰角（弧度）/ dist 距离 / target 看向点
+const cam = {az: Math.PI*0.30, el: Math.PI*0.32, dist: 720, target:[0,0,90]};
+// 投影参数（CSS 像素口径）。由 render() / hitTest3D() 在使用 project() 前同步为主画布实时口径，
+// 故初值仅为占位；drawScene 导出时会临时改写，但不影响命中路径（命中前会重置）。
+let dpr = 1, cssW = 800, cssH = 600, focal = 600;
+
+function uid(){ return 'm'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36); }
+
+// 起始布局 = 定稿设计方案（8m² L 形，分高台面：水槽区95/灶区83；坐标经 workflow 校验无冲突）
+// mk 接收显式 w/d/h/baseZ：分高台面要逐件覆盖默认值，不能只取类型默认
+function starterModules(){
+  const mk = (type,x,y,rot,w,d,h,baseZ)=>({id:uid(), type, x, y, rot, w, d, h, baseZ});
+  return [
+    // —— 左墙 = 洗→切→烧 一字工作流（下半清洗95 / 上半烹饪83，台阶在 y180）——
+    mk('dish',   30, 60,90, 60,60, 95,  0),  // 洗碗机60嵌入：左墙最下，紧邻水槽下水
+    mk('sink',   30,135,90, 90,60, 95,  0),  // 水槽柜90：⌀780 大单盆，台面95免弯腰
+    mk('base',   30,215,90, 70,60, 83,  0),  // 备餐落台70：洗与烧之间的切配区
+    mk('cooktop',30,290,90, 80,60, 83,  0),  // 天然气双灶80：左墙最上近烟道(顶端 y330 距柱6cm)
+    // —— 底墙 = 冷藏 + 电器塔柜（左下角转角让给左墙，从 x60 起）——
+    mk('fridge', 90, 30,0,  60,60,170,  0),  // 60×170 嵌入冰箱：底墙左端
+    mk('tower', 150, 30,0,  60,60,220,  0),  // 微蒸烤一体机塔柜
+    // —— 顶墙窗下 = 看景备餐台（水槽移走后腾出，兼放小家电）——
+    mk('base',  112,355,180,90,60, 83,  0),  // 窗下备餐台：切菜看窗
+    mk('base',  188,355,180,60,60, 83,  0),  // 窗右备餐/小家电台
+    // —— 吊装层 ——
+    mk('hood',   30,291,90, 90,50, 33,152),  // 油烟机：灶上方
+    mk('wall',   17,137,90,215,35, 93,155),  // 左墙顶天吊柜 y30..244（避让油烟机），洗切区上方
+    mk('wall',   90, 17,0,   60,35, 78,170), // 冰箱顶柜 z170..248
+  ];
+}
+// 优先返回用户「设为默认」保存的布局；没有该槽才回退到写死的开局布局
+function defaultState(){ return readStateFrom(LS3_DEF) || {paletteIndex:0, roomParams:{...DEFAULT_ROOM}, modules:starterModules(), selectedId:null}; }
+
+// 校验配色索引（防越界崩溃）
+function safePaletteIndex(v){ return (Number.isInteger(v) && v>=0 && v<PALETTES.length) ? v : 0; }
+// 房间参数逐字段强制正数；层高一律覆盖为 250
+function sanitizeRoomParams(obj){
+  const out = {...DEFAULT_ROOM};
+  // 逐字段强制正数并夹紧上限：bottom/right 限 1500cm，其余构造尺寸限 1200cm，
+  // 防止导入异常 JSON（如 1e6）让地板网格生成数万根线段卡死。层高随后被强制覆盖。
+  if(obj && typeof obj==='object'){
+    for(const [k] of ROOM_FIELDS){
+      const v=+obj[k];
+      if(!isNaN(v) && v>0) out[k]=Math.min(v, (k==='bottom'||k==='right')?1500:1200);
+    }
+  }
+  out.ceiling = CEILING;
+  return out;
+}
+// 规范化 2D module（抄自 2D normalizeModule）
+function normalizeModule(m){
+  const t = MODULE_TYPES[m.type] || MODULE_TYPES.base;
+  return {id:m.id||uid(), type:MODULE_TYPES[m.type]?m.type:'base',
+          x:+m.x||0, y:+m.y||0, w:+m.w||t.w, d:+m.d||t.d, rot:((+m.rot||0)%360+360)%360};
+}
+// 把 2D module 补全 h/baseZ（2D 无高度信息时按类型默认表给）
+function enrich(raw){
+  const m = normalizeModule(raw);
+  const dh = DEFAULT_H[m.type] ?? 85, dz = DEFAULT_BASEZ[m.type] ?? 0;
+  m.h     = (+raw.h > 0) ? +raw.h : dh;
+  m.baseZ = (raw.baseZ != null && +raw.baseZ >= 0) ? +raw.baseZ : dz;
+  clampHeight(m);
+  return m;
+}
+// 层高约束：先夹 h，再据此夹 baseZ，避免上限为负产生 NaN
+function clampHeight(m){
+  m.h = Math.max(10, Math.min(CEILING, m.h));
+  m.baseZ = Math.max(0, Math.min(CEILING - m.h, m.baseZ));
+}
+
+// 从指定 localStorage 键读取并复原 state（补全模块高度、夹尺寸）；无数据/损坏返回 null
+function readStateFrom(key){
+  try{
+    const s = JSON.parse(localStorage.getItem(key));
+    if(s && Array.isArray(s.modules)){
+      return {paletteIndex:safePaletteIndex(s.paletteIndex), roomParams:sanitizeRoomParams(s.roomParams),
+              modules:s.modules.map(enrich), selectedId:null};
+    }
+  }catch(e){}
+  return null;
+}
+function loadState(){ return readStateFrom(LS3) || defaultState(); }
+function persist(){
+  try{ localStorage.setItem(LS3, JSON.stringify({paletteIndex:state.paletteIndex, roomParams:state.roomParams, modules:state.modules})); }catch(e){}
+}
+// 任何改动后统一调用：存盘 + 重画 + 刷新面板
+function commit(){ persist(); render(); updateInspector(); }
+// 仅重画（拖拽 / 实时改尺寸时用，避免重建面板抢焦点）
+function renderOnly(){ render(); renderMini(); }
+
+// ===================== 几何辅助（抄自 2D） =====================
+// 旋转后的占地包围盒（rot 为 90 倍数时交换 w/d）
+function footprint(m){
+  const swap = (m.rot % 180 !== 0);
+  const sx = swap ? m.d : m.w, sy = swap ? m.w : m.d;
+  return {sx, sy, minX:m.x-sx/2, maxX:m.x+sx/2, minY:m.y-sy/2, maxY:m.y+sy/2};
+}
+function rectsOverlap(a,b){ return a.minX<b.maxX-0.5 && a.maxX>b.minX+0.5 && a.minY<b.maxY-0.5 && a.maxY>b.minY+0.5; }
+const floorMods = ()=> state.modules.filter(m=>MODULE_TYPES[m.type].layer==='floor');
+const clamp = (v,lo,hi)=> Math.max(lo, Math.min(hi, v));
+
+// ===================== 相机 / 投影 =====================
+function camEye(){
+  const ce=Math.cos(cam.el), se=Math.sin(cam.el), ca=Math.cos(cam.az), sa=Math.sin(cam.az);
+  // Z 为高度轴：仰角分量加在 Z 上，worldUp=+Z
+  return V.add(cam.target, [cam.dist*ce*ca, cam.dist*ce*sa, cam.dist*se]);
+}
+// 构造视图基（右手，world up=+Z），返回 toView：世界点 → [vx 右, vy 上, vz 前]
+function makeView(){
+  const eye = camEye();
+  const fwd = V.norm(V.sub(cam.target, eye));
+  const worldUp = [0,0,1];
+  let right = V.cross(fwd, worldUp);
+  if(V.len(right) < 1e-6) right = [1,0,0];      // 近俯视退化保护
+  right = V.norm(right);
+  const up = V.norm(V.cross(right, fwd));
+  return {eye, fwd, right, up,
+    toView:(p)=>{ const d=V.sub(p,eye); return [V.dot(d,right), V.dot(d,up), V.dot(d,fwd)]; }};
+}
+const FOV = 42*Math.PI/180;
+// 视图坐标 → 屏幕坐标（CSS 像素）；返回 [sx, sy, depth]，depth=vz 供排序；在相机后方返回 null
+function project(vp){
+  if(vp[2] <= 0.05) return null;
+  const f = focal;
+  return [cssW/2 + f*vp[0]/vp[2], cssH/2 - f*vp[1]/vp[2], vp[2]];
+}
+
+// ===================== 盒子：8 顶点 + 6 面 =====================
+function boxCorners(m){
+  const fp = footprint(m);
+  const z0 = m.baseZ, z1 = m.baseZ + m.h;
+  return [[fp.minX,fp.minY,z0],[fp.maxX,fp.minY,z0],[fp.maxX,fp.maxY,z0],[fp.minX,fp.maxY,z0],
+          [fp.minX,fp.minY,z1],[fp.maxX,fp.minY,z1],[fp.maxX,fp.maxY,z1],[fp.minX,fp.maxY,z1]];
+}
+// 6 面：顶点索引（CCW 看向外）+ 朝外法线 + 类型（决定明暗）
+const BOX_FACES = [
+  {idx:[4,5,6,7], n:[0,0, 1], kind:'top'},
+  {idx:[0,3,2,1], n:[0,0,-1], kind:'bottom'},
+  {idx:[0,1,5,4], n:[0,-1,0], kind:'side'},   // -Y（朝底墙，常为正面）
+  {idx:[3,7,6,2], n:[0, 1,0], kind:'side'},   // +Y
+  {idx:[0,4,7,3], n:[-1,0,0], kind:'side'},   // -X
+  {idx:[1,2,6,5], n:[ 1,0,0], kind:'side'},   // +X
+];
+
+// ===================== 光照 / 取色 =====================
+const LIGHT = V.norm([-0.4,-0.5,-0.9]);  // 斜上方来光
+const AMBIENT = 0.5;
+function faceShade(n){ // 世界法线 → [0..1] 亮度系数；顶面最亮、侧面渐暗
+  const lambert = Math.max(0, V.dot(n, V.scale(LIGHT,-1)));
+  return AMBIENT + (1-AMBIENT)*lambert;
+}
+// 解析 '#rrggbb' → [r,g,b]
+function hex2rgb(hex){ return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]; }
+// rgb 数组 × 系数 → css 字符串
+function shadeRGB(rgb,k,alpha){
+  const c=v=>Math.max(0,Math.min(255,Math.round(v*k)));
+  return alpha!=null ? `rgba(${c(rgb[0])},${c(rgb[1])},${c(rgb[2])},${alpha})`
+                     : `rgb(${c(rgb[0])},${c(rgb[1])},${c(rgb[2])})`;
+}
+// 构件基色（与 2D drawModule 同一分类逻辑）
+function baseColorOf(m, P){
+  const role = MODULE_TYPES[m.type].role;
+  if(role==='counter') return hex2rgb(P.counter);
+  if(role==='appliance'||role==='fridge'||role==='sink'||role==='cooktop') return hex2rgb(P.appliance);
+  return hex2rgb(P.cabinet);
+}
+
+// ===================== 构件造型细节系统（decal 面贴花 + subVolume 子体量） =====================
+// 数据驱动:DETAILS[type] 声明每类构件造型;未登记的 type 自动退回纯盒(向后兼容)。
+// 安全开关:任一置 false 即回退纯盒渲染,排序/命中不受影响。
+let DECAL_ON = true, SUBVOL_ON = true;
+// 每个 type 一个独立对象字面量(可并行各写一类、互不冲突)。
+const DETAILS = {
+  "cooktop": {"decals":{"top":[{"kind":"rect","x":0.04,"y":0.05,"w":0.92,"h":0.9,"r":0.05,"fill":"_glass"},{"kind":"rect","x":0.07,"y":0.08,"w":0.86,"h":0.84,"r":0.04,"stroke":"_metal","lw":1,"alpha":0.5},{"kind":"circle","cx":0.32,"cy":0.5,"rx":0.185,"stroke":"_metal","lw":2},{"kind":"circle","cx":0.32,"cy":0.5,"rx":0.12,"stroke":"_metal","lw":1.5},{"kind":"circle","cx":0.32,"cy":0.5,"rx":0.062,"stroke":"_metal","lw":1},{"kind":"line","x1":0.12,"y1":0.5,"x2":0.52,"y2":0.5,"stroke":"_metal","lw":1,"alpha":0.7},{"kind":"line","x1":0.32,"y1":0.28,"x2":0.32,"y2":0.72,"stroke":"_metal","lw":1,"alpha":0.7},{"kind":"circle","cx":0.7,"cy":0.5,"rx":0.155,"stroke":"_metal","lw":2},{"kind":"circle","cx":0.7,"cy":0.5,"rx":0.1,"stroke":"_metal","lw":1.5},{"kind":"circle","cx":0.7,"cy":0.5,"rx":0.052,"stroke":"_metal","lw":1},{"kind":"line","x1":0.545,"y1":0.5,"x2":0.855,"y2":0.5,"stroke":"_metal","lw":1,"alpha":0.7},{"kind":"line","x1":0.7,"y1":0.345,"x2":0.7,"y2":0.655,"stroke":"_metal","lw":1,"alpha":0.7}],"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.13,"fill":"_dark"},{"kind":"circle","cx":0.4,"cy":0.52,"rx":0.055,"fill":"_metal","stroke":"_dark","lw":1.5},{"kind":"circle","cx":0.4,"cy":0.52,"rx":0.02,"fill":"_dark"},{"kind":"circle","cx":0.6,"cy":0.52,"rx":0.055,"fill":"_metal","stroke":"_dark","lw":1.5},{"kind":"circle","cx":0.6,"cy":0.52,"rx":0.02,"fill":"_dark"}]}},
+  "hood": {"decals":{"front":[{"kind":"rect","x":0.02,"y":0.3,"w":0.96,"h":0.66,"r":0.05,"fill":"_steel"},{"kind":"rect","x":0.04,"y":0.6,"w":0.92,"h":0.34,"r":0.04,"fill":"_metal","alpha":0.35},{"kind":"rect","x":0,"y":0,"w":1,"h":0.32,"r":0.03,"fill":"_steel"},{"kind":"line","x1":0.02,"y1":0.3,"x2":0.98,"y2":0.3,"stroke":"_dark","lw":1},{"kind":"rect","x":0.58,"y":0.1,"w":0.34,"h":0.13,"r":0.5,"fill":"_dark"},{"kind":"circle","cx":0.64,"cy":0.165,"rx":0.018,"fill":"_hi"},{"kind":"circle","cx":0.71,"cy":0.165,"rx":0.018,"fill":"_hi"},{"kind":"circle","cx":0.78,"cy":0.165,"rx":0.018,"fill":"_hi"},{"kind":"circle","cx":0.85,"cy":0.165,"rx":0.018,"fill":"_hi"},{"kind":"line","x1":0.08,"y1":0.165,"x2":0.3,"y2":0.165,"stroke":"_metal","lw":1,"alpha":0.6}],"bottom":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"_steel"},{"kind":"rect","x":0.1,"y":0.14,"w":0.8,"h":0.72,"r":0.03,"fill":"_dark"},{"kind":"line","x1":0.1,"y1":0.24,"x2":0.9,"y2":0.24,"stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.33,"x2":0.9,"y2":0.33,"stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.42,"x2":0.9,"y2":0.42,"stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.5,"x2":0.9,"y2":0.5,"stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.58,"x2":0.9,"y2":0.58,"stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.67,"x2":0.9,"y2":0.67,"stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.76,"x2":0.9,"y2":0.76,"stroke":"_steel","lw":1},{"kind":"circle","cx":0.3,"cy":0.5,"rx":0.05,"fill":"_hi","alpha":0.5},{"kind":"circle","cx":0.7,"cy":0.5,"rx":0.05,"fill":"_hi","alpha":0.5}]},"subs":[{"rel":{"dx":0,"dy":-12,"dz":48,"w":34,"d":22,"h":66},"colorKey":"_steel"}]},
+  "sink": {"decals":{"top":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"counter"},{"kind":"rect","x":0.18,"y":0.2,"w":0.64,"h":0.5,"r":0.08,"fill":"_shadow","stroke":"_dark","lw":1.5},{"kind":"rect","x":0.24,"y":0.27,"w":0.52,"h":0.36,"r":0.06,"fill":"_dark","alpha":0.5},{"kind":"circle","cx":0.5,"cy":0.45,"rx":0.05,"fill":"_dark","stroke":"_metal","lw":1},{"kind":"circle","cx":0.5,"cy":0.45,"rx":0.018,"fill":"_shadow"}],"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"cabinet"},{"kind":"rect","x":0,"y":0,"w":1,"h":0.08,"fill":"_shadow"},{"kind":"rect","x":0.06,"y":0.12,"w":0.88,"h":0.82,"r":0.015,"stroke":"_dark","lw":1.5},{"kind":"rect","x":0.12,"y":0.18,"w":0.76,"h":0.7,"r":0.01,"stroke":"_dark","lw":1,"alpha":0.6},{"kind":"line","x1":0.3,"y1":0.86,"x2":0.7,"y2":0.86,"stroke":"_metal","lw":3}]},"subs":[{"rel":{"dx":-16,"dy":-20,"dz":60,"w":4,"d":4,"h":24},"colorKey":"_metal"},{"rel":{"dx":-16,"dy":-11,"dz":70,"w":4,"d":15,"h":4},"colorKey":"_metal"}]},
+  "fridge": {"decals":{"front":[{"kind":"rect","x":0.05,"y":0.02,"w":0.9,"h":0.585,"r":0.02,"fill":"_hi","stroke":"_dark","lw":1},{"kind":"rect","x":0.05,"y":0.635,"w":0.9,"h":0.345,"r":0.02,"fill":"_hi","stroke":"_dark","lw":1},{"kind":"rect","x":0,"y":0.605,"w":1,"h":0.02,"fill":"_dark"},{"kind":"line","x1":0.07,"y1":0.3,"x2":0.93,"y2":0.3,"stroke":"_dark","lw":1,"alpha":0.35},{"kind":"line","x1":0.05,"y1":0.02,"x2":0.05,"y2":0.98,"stroke":"_dark","lw":1,"alpha":0.4}],"left":[{"kind":"line","x1":0.5,"y1":0.02,"x2":0.5,"y2":0.98,"stroke":"_dark","lw":1,"alpha":0.3}],"right":[{"kind":"line","x1":0.5,"y1":0.02,"x2":0.5,"y2":0.98,"stroke":"_dark","lw":1,"alpha":0.3}]},"subs":[{"rel":{"dx":28,"dy":36,"dz":58,"w":3,"d":4,"h":24},"colorKey":"_steel"},{"rel":{"dx":28,"dy":36,"dz":-30,"w":3,"d":4,"h":50},"colorKey":"_steel"}]},
+  "oven": {"decals":{"front":[{"kind":"rect","x":0.04,"y":0.78,"w":0.92,"h":0.18,"r":0.02,"fill":"_metal"},{"kind":"circle","cx":0.16,"cy":0.87,"rx":0.035,"fill":"_dark","stroke":"_steel","lw":1},{"kind":"circle","cx":0.84,"cy":0.87,"rx":0.035,"fill":"_dark","stroke":"_steel","lw":1},{"kind":"rect","x":0.34,"y":0.84,"w":0.32,"h":0.06,"r":0.015,"fill":"_glass"},{"kind":"rect","x":0.06,"y":0.06,"w":0.88,"h":0.66,"r":0.03,"fill":"_shadow"},{"kind":"rect","x":0.14,"y":0.16,"w":0.72,"h":0.46,"r":0.025,"fill":"_glass"},{"kind":"rect","x":0.14,"y":0.16,"w":0.72,"h":0.46,"r":0.025,"stroke":"_hi","lw":1.5,"alpha":0.4}]},"subs":[{"rel":{"dx":0,"dy":30,"dz":16,"w":42,"d":3,"h":3},"colorKey":"_steel"}]},
+  "micro": {"decals":{"front":[{"kind":"rect","x":0.04,"y":0.08,"w":0.74,"h":0.84,"r":0.03,"fill":"_glass"},{"kind":"rect","x":0.82,"y":0.08,"w":0.14,"h":0.84,"r":0.02,"fill":"_metal"},{"kind":"circle","cx":0.89,"cy":0.74,"rx":0.025,"fill":"_hi","stroke":"_steel","lw":1},{"kind":"circle","cx":0.89,"cy":0.62,"rx":0.025,"fill":"_hi","stroke":"_steel","lw":1},{"kind":"line","x1":0.1,"y1":0.8,"x2":0.72,"y2":0.8,"stroke":"_steel","lw":3}]}},
+  "tower": {"subs":[{"rel":{"dx":0,"dy":30,"dz":-4,"w":42,"d":3,"h":3},"colorKey":"_steel"},{"rel":{"dx":0,"dy":30,"dz":37,"w":36,"d":3,"h":3},"colorKey":"_steel"}],"decals":{"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.04,"fill":"_shadow"},{"kind":"rect","x":0.06,"y":0.055,"w":0.88,"h":0.095,"r":0.01,"fill":"cabinet","stroke":"_dark","lw":1.5},{"kind":"line","x1":0.2,"y1":0.103,"x2":0.8,"y2":0.103,"stroke":"_metal","lw":2.5},{"kind":"rect","x":0.06,"y":0.165,"w":0.88,"h":0.095,"r":0.01,"fill":"cabinet","stroke":"_dark","lw":1.5},{"kind":"line","x1":0.2,"y1":0.213,"x2":0.8,"y2":0.213,"stroke":"_metal","lw":2.5},{"kind":"rect","x":0.05,"y":0.3,"w":0.9,"h":0.22,"r":0.012,"fill":"appliance","stroke":"_dark","lw":1.5},{"kind":"rect","x":0.07,"y":0.475,"w":0.86,"h":0.038,"r":0.006,"fill":"_metal"},{"kind":"circle","cx":0.76,"cy":0.494,"rx":0.028,"fill":"_dark","stroke":"_steel","lw":1},{"kind":"circle","cx":0.86,"cy":0.494,"rx":0.028,"fill":"_dark","stroke":"_steel","lw":1},{"kind":"rect","x":0.09,"y":0.485,"w":0.5,"h":0.018,"r":0.004,"fill":"_glass","alpha":0.7},{"kind":"rect","x":0.08,"y":0.315,"w":0.84,"h":0.15,"r":0.01,"fill":"_shadow"},{"kind":"rect","x":0.13,"y":0.335,"w":0.74,"h":0.11,"r":0.008,"fill":"_glass"},{"kind":"line","x1":0.13,"y1":0.4,"x2":0.87,"y2":0.4,"stroke":"_steel","lw":1,"alpha":0.45},{"kind":"rect","x":0.05,"y":0.55,"w":0.9,"h":0.14,"r":0.012,"fill":"appliance","stroke":"_dark","lw":1.5},{"kind":"rect","x":0.08,"y":0.565,"w":0.7,"h":0.11,"r":0.008,"fill":"_glass"},{"kind":"line","x1":0.08,"y1":0.62,"x2":0.78,"y2":0.62,"stroke":"_steel","lw":1,"alpha":0.4},{"kind":"rect","x":0.81,"y":0.565,"w":0.11,"h":0.11,"r":0.006,"fill":"_metal"},{"kind":"circle","cx":0.865,"cy":0.6,"rx":0.022,"fill":"_dark","stroke":"_steel","lw":1},{"kind":"rect","x":0.835,"y":0.638,"w":0.06,"h":0.012,"r":0.003,"fill":"_dark","alpha":0.6},{"kind":"rect","x":0.05,"y":0.72,"w":0.445,"h":0.26,"r":0.012,"fill":"cabinet","stroke":"_dark","lw":1.5},{"kind":"rect","x":0.505,"y":0.72,"w":0.445,"h":0.26,"r":0.012,"fill":"cabinet","stroke":"_dark","lw":1.5},{"kind":"line","x1":0.455,"y1":0.78,"x2":0.455,"y2":0.92,"stroke":"_metal","lw":2.5},{"kind":"line","x1":0.545,"y1":0.78,"x2":0.545,"y2":0.92,"stroke":"_metal","lw":2.5}]}},
+  "dish": {"decals":{"top":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"counter"}],"front":[{"kind":"rect","x":0,"y":0.08,"w":1,"h":0.92,"fill":"cabinet"},{"kind":"rect","x":0.03,"y":0.11,"w":0.94,"h":0.86,"r":0.015,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.06,"y1":0.92,"x2":0.94,"y2":0.92,"stroke":"_dark","lw":2},{"kind":"rect","x":0,"y":0,"w":1,"h":0.08,"fill":"_shadow"}]}},
+  "base": {"decals":{"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.08,"fill":"_shadow"},{"kind":"rect","x":0.035,"y":0.11,"w":0.43,"h":0.85,"r":0.015,"stroke":"_dark","lw":1.2},{"kind":"rect","x":0.535,"y":0.11,"w":0.43,"h":0.85,"r":0.015,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.5,"y1":0.11,"x2":0.5,"y2":0.96,"stroke":"_dark","lw":1},{"kind":"line","x1":0.46,"y1":0.5,"x2":0.46,"y2":0.72,"stroke":"_metal","lw":2.4},{"kind":"line","x1":0.54,"y1":0.5,"x2":0.54,"y2":0.72,"stroke":"_metal","lw":2.4}],"top":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"counter"},{"kind":"line","x1":0,"y1":0.965,"x2":1,"y2":0.965,"stroke":"_hi","lw":1.5}]}},
+  "drawer": {"decals":{"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.08,"fill":"_shadow"},{"kind":"rect","x":0.035,"y":0.11,"w":0.93,"h":0.27,"r":0.012,"stroke":"_dark","lw":1.2},{"kind":"rect","x":0.035,"y":0.4,"w":0.93,"h":0.27,"r":0.012,"stroke":"_dark","lw":1.2},{"kind":"rect","x":0.035,"y":0.69,"w":0.93,"h":0.27,"r":0.012,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.34,"y1":0.245,"x2":0.66,"y2":0.245,"stroke":"_metal","lw":2.4},{"kind":"line","x1":0.34,"y1":0.535,"x2":0.66,"y2":0.535,"stroke":"_metal","lw":2.4},{"kind":"line","x1":0.34,"y1":0.825,"x2":0.66,"y2":0.825,"stroke":"_metal","lw":2.4}],"top":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"counter"},{"kind":"line","x1":0,"y1":0.965,"x2":1,"y2":0.965,"stroke":"_hi","lw":1.5}]}},
+  "counter": {"decals":{"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.08,"fill":"_shadow"},{"kind":"rect","x":0.035,"y":0.11,"w":0.93,"h":0.85,"r":0.015,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.9,"y1":0.5,"x2":0.9,"y2":0.74,"stroke":"_metal","lw":2.4}],"top":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"counter"},{"kind":"rect","x":0.12,"y":0.18,"w":0.5,"h":0.5,"r":0.04,"fill":"cabinet","alpha":0.55},{"kind":"rect","x":0.12,"y":0.18,"w":0.5,"h":0.5,"r":0.04,"stroke":"_dark","lw":1,"alpha":0.5},{"kind":"line","x1":0,"y1":0.965,"x2":1,"y2":0.965,"stroke":"_hi","lw":1.5}]}},
+  "corner": {"decals":{"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.08,"fill":"_shadow"},{"kind":"rect","x":0.04,"y":0.11,"w":0.92,"h":0.85,"r":0.018,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.11,"y1":0.5,"x2":0.11,"y2":0.74,"stroke":"_metal","lw":2.4}],"top":[{"kind":"rect","x":0,"y":0,"w":1,"h":1,"fill":"counter"},{"kind":"line","x1":0,"y1":0.96,"x2":1,"y2":0.96,"stroke":"_hi","lw":1.5}]}},
+  "tall": {"decals":{"front":[{"kind":"rect","x":0,"y":0,"w":1,"h":0.04,"fill":"_shadow"},{"kind":"rect","x":0.06,"y":0.055,"w":0.88,"h":0.41,"r":0.015,"stroke":"_dark","lw":1.2},{"kind":"rect","x":0.06,"y":0.515,"w":0.88,"h":0.45,"r":0.015,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.06,"y1":0.5,"x2":0.94,"y2":0.5,"stroke":"_dark","lw":1.5},{"kind":"line","x1":0.85,"y1":0.12,"x2":0.85,"y2":0.4,"stroke":"_metal","lw":3},{"kind":"line","x1":0.85,"y1":0.58,"x2":0.85,"y2":0.9,"stroke":"_metal","lw":3}]}},
+  "wall": {"decals":{"front":[{"kind":"rect","x":0.04,"y":0.13,"w":0.44,"h":0.83,"r":0.02,"stroke":"_dark","lw":1.2},{"kind":"rect","x":0.52,"y":0.13,"w":0.44,"h":0.83,"r":0.02,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.5,"y1":0.13,"x2":0.5,"y2":0.96,"stroke":"_dark","lw":1.5},{"kind":"line","x1":0.1,"y1":0.08,"x2":0.9,"y2":0.08,"stroke":"_metal","lw":3}],"bottom":[{"kind":"rect","x":0.03,"y":0.03,"w":0.94,"h":0.94,"r":0.02,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.12,"y1":0.85,"x2":0.88,"y2":0.85,"stroke":"_hi","lw":2,"alpha":0.8}]}}
+};
+
+// 世界法线 → 离散键
+function nkey(n){
+  if(n[2]> 0.5) return 'z+'; if(n[2]<-0.5) return 'z-';
+  if(n[0]> 0.5) return 'x+'; if(n[0]<-0.5) return 'x-';
+  if(n[1]> 0.5) return 'y+'; return 'y-';
+}
+// 平面向量绕 +Z 顺时针转 90°×steps(朝向约定:rot0 正面=+Y, rot90=+X, rot180=-Y, rot270=-X)
+function rotVec2(x,y,steps){ steps=((steps%4)+4)%4; for(let i=0;i<steps;i++){ const t=x; x=y; y=-t; } return [x,y]; }
+// rot → {世界面键: 局部角色}。约定 rot0: front=+Y, back=-Y, right=+X, left=-X
+function faceRoleMap(rot){
+  const steps=Math.round(rot/90), map={'z+':'top','z-':'bottom'};
+  const base={front:[0,1], back:[0,-1], right:[1,0], left:[-1,0]};
+  for(const role in base){ const v=rotVec2(base[role][0],base[role][1],steps); map[nkey([v[0],v[1],0])]=role; }
+  return map;
+}
+// 把一张世界面的 4 顶点索引规整为 [LB,RB,RT,LT](side 面 v 轴朝 +Z;top/bottom 的 v 轴朝构件 front)
+function faceQuad(corners, face, frontSteps){
+  const ids=face.idx; let uAxis, vAxis;
+  if(face.kind==='side'){ vAxis=[0,0,1]; uAxis=V.norm(V.cross(face.n,vAxis)); }
+  else { const f=rotVec2(0,1,frontSteps); vAxis=[f[0],f[1],0]; uAxis=[f[1],-f[0],0];
+         if(face.kind==='bottom'){ vAxis=[-f[0],-f[1],0]; } }
+  const pu=ids.map(i=>V.dot(corners[i],uAxis)), pv=ids.map(i=>V.dot(corners[i],vAxis));
+  const uMin=Math.min(...pu),uMax=Math.max(...pu),vMin=Math.min(...pv),vMax=Math.max(...pv);
+  const pick=(ut,vt)=>{ let best=ids[0],bd=Infinity;
+    for(let k=0;k<ids.length;k++){ const d=Math.abs(pu[k]-ut)+Math.abs(pv[k]-vt); if(d<bd){bd=d;best=ids[k];} } return best; };
+  return [pick(uMin,vMin), pick(uMax,vMin), pick(uMax,vMax), pick(uMin,vMax)];
+}
+// 面物理宽高比(正圆矫正用)
+function faceAspect(corners,q){ const w=V.len(V.sub(corners[q[1]],corners[q[0]])), h=V.len(V.sub(corners[q[3]],corners[q[0]])); return h>1e-6?w/h:1; }
+// 单位面坐标 (u,v)∈[0,1] → 屏幕(双线性);S=[LB,RB,RT,LT],v=0 下、v=1 上
+function uvMapper(S){ return (u,v)=>{
+  const bx=S[0][0]+(S[1][0]-S[0][0])*u, by=S[0][1]+(S[1][1]-S[0][1])*u;
+  const tx=S[3][0]+(S[2][0]-S[3][0])*u, ty=S[3][1]+(S[2][1]-S[3][1])*u;
+  return [bx+(tx-bx)*v, by+(ty-by)*v]; }; }
+// 掠射/极小面降级:四边形退化成窄条或太小 → 跳过 decal(只留素面)
+function degenerate(S){
+  const d=(a,b)=>Math.hypot(S[a][0]-S[b][0],S[a][1]-S[b][1]);
+  const bo=d(0,1),to=d(2,3),le=d(0,3),ri=d(1,2);
+  const wR=Math.max(bo,to)/Math.max(1,Math.min(bo,to)), hR=Math.max(le,ri)/Math.max(1,Math.min(le,ri));
+  const area=Math.abs((S[1][0]-S[0][0])*(S[3][1]-S[0][1])-(S[3][0]-S[0][0])*(S[1][1]-S[0][1]));
+  return wR>5 || hR>5 || area<280;
+}
+// 颜色键 → css。特殊键派生自父基色(禁硬编码 hex,换配色不失真)
+function resolveColor(key, baseC, P, shade){
+  switch(key){
+    case '_dark':   return shadeRGB(baseC, shade*0.45);
+    case '_shadow': return shadeRGB(baseC, shade*0.30);
+    case '_hi':     return shadeRGB(baseC, Math.min(1.35, shade*1.28));
+    case '_glass':  return 'rgba(22,26,30,0.84)';
+    case '_metal':  return shadeRGB([200,205,211], shade);
+    case '_steel':  return shadeRGB([150,156,163], shade);
+    case '_white':  return shadeRGB([243,243,238], shade);
+    default:        return P[key] ? shadeRGB(hex2rgb(P[key]), shade) : shadeRGB(baseC, shade);
+  }
+}
+// 颜色键 → rgb 数组(子体量基色用)
+function colorKeyRGB(key, m, P){
+  switch(key){
+    case '_metal': return [200,205,211];
+    case '_steel': return [150,156,163];
+    case '_glass': return [24,28,32];
+    case '_white': return [243,243,238];
+    case '_dark':  { const b=baseColorOf(m,P); return [b[0]*0.5,b[1]*0.5,b[2]*0.5]; }
+    default: return P[key] ? hex2rgb(P[key]) : baseColorOf(m,P);
+  }
+}
+// 单位坐标圆角矩形 → 点串
+function roundRectUV(x,y,w,h,r){
+  r=Math.min(r||0, Math.abs(w)/2, Math.abs(h)/2);
+  if(r<=0.0001) return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+  const pts=[], arc=(cx,cy,a0,a1)=>{ for(let i=0;i<=3;i++){ const a=a0+(a1-a0)*i/3; pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]); } };
+  arc(x+r,y+r,Math.PI,Math.PI*1.5); arc(x+w-r,y+r,Math.PI*1.5,Math.PI*2);
+  arc(x+w-r,y+h-r,0,Math.PI*0.5); arc(x+r,y+h-r,Math.PI*0.5,Math.PI);
+  return pts;
+}
+// decal 形状列表 → 屏幕折线 + 样式
+function compileShapes(shapes, map, aspect, baseC, P, shade){
+  const out=[], col=k=> k==null?null:resolveColor(k, baseC, P, shade);
+  for(const s of shapes){
+    if(s.kind==='rect'){
+      out.push({pts:roundRectUV(s.x,s.y,s.w,s.h,s.r).map(uv=>map(uv[0],uv[1])), closed:true,
+                fill:col(s.fill), stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+    } else if(s.kind==='circle'){
+      const ry=s.ry!=null?s.ry:s.rx*aspect, pts=[];
+      for(let k=0;k<24;k++){ const a=k/24*2*Math.PI; pts.push(map(s.cx+s.rx*Math.cos(a), s.cy+ry*Math.sin(a))); }
+      out.push({pts, closed:true, fill:col(s.fill), stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+    } else if(s.kind==='line'){
+      out.push({pts:[map(s.x1,s.y1),map(s.x2,s.y2)], closed:false, stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+    } else if(s.kind==='lines'){
+      out.push({pts:s.pts.map(uv=>map(uv[0],uv[1])), closed:!!s.closed, fill:col(s.fill), stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+    }
+  }
+  return out;
+}
+// 子体量(局部 rel 盒)→ 世界盒;type='_sub' 防止递归触发细节
+function subToModule(m, sv){
+  const r=sv.rel, steps=Math.round(m.rot/90);
+  const o=rotVec2(r.dx||0, r.dy||0, steps);
+  const baseZ=m.baseZ + (m.h/2 + (r.dz||0) - r.h/2);
+  return {type:'_sub', x:m.x+o[0], y:m.y+o[1], w:r.w, d:r.d, rot:m.rot, baseZ:Math.max(0,baseZ), h:r.h};
+}
+
+// ===================== 渲染（画家算法，远→近） =====================
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const stage = document.getElementById('stage');
+
+function resizeCanvas(){
+  const r = stage.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(r.width*dpr); canvas.height = Math.round(r.height*dpr);
+  canvas.style.width = r.width+'px'; canvas.style.height = r.height+'px';
+  render();
+}
+
+// 把整个场景画到指定 ctx（实时渲染与 PNG 导出共用）。opt: {P, selectedId, warnIds, w, h, focal}
+function drawScene(c, opt){
+  const P = opt.P, W = opt.w, H = opt.h;
+  // 切换全局投影口径，使 project() 对该 ctx 生效（render 与导出尺寸不同）。
+  // 不再「画完还原」：render() 与 hitTest3D() 都会在使用 project() 前重置为主画布实时口径，
+  // 因此导出时的临时口径不会泄漏到命中路径。
+  cssW=W; cssH=H; focal=opt.focal;
+  const view = makeView();
+  const eye = view.eye;
+
+  // ---- 全场景统一 per-face 画家排序：外壳(墙/地板/窗,带 tier 偏置) + 室内(盒子/子体量/烟道,裸 vz) ----
+  // 每个面带 depth=面质心 view 空间 z。墙的 WALL_BIAS≫房间尺度，恒排在室内之后；地板偏置最大、最先画。
+  // 取代旧的「逐盒子分离轴 + Array.sort」——后者比较器非传递(L 形拐角成环)、对相交子体量退化为质心兜底，会穿模。
+  const faces = [];
+  collectRoomFaces(faces, view, P);
+  for(const m of state.modules){
+    pushBoxFaces(faces, boxCorners(m), baseColorOf(m,P), view, eye, P,
+                 m.id===opt.selectedId, opt.warnIds.has(m.id), m);
+    // 子体量(烟道筒/龙头/拉手/台面出挑等):贴外侧的真盒子,拆成面参与同一排序
+    const det = SUBVOL_ON ? DETAILS[m.type] : null;
+    if(det && det.subs) for(const sv of det.subs){
+      const sm = subToModule(m, sv);
+      pushBoxFaces(faces, boxCorners(sm), colorKeyRGB(sv.colorKey, m, P), view, eye, P, false, false);
+    }
+  }
+  { // 烟道柱：不可摆柜的室内物体，同样拆成面参与排序
+    const f = room.flue;
+    const fb = {x:(f.minX+f.maxX)/2, y:(f.minY+f.maxY)/2, w:f.maxX-f.minX, d:f.maxY-f.minY, rot:0, baseZ:0, h:CEILING};
+    pushBoxFaces(faces, boxCorners(fb), hex2rgb(P.flue), view, eye, P, false, false);
+  }
+
+  // ---- 从远到近绘制（depth 越大越远、越先画）----
+  faces.sort((a,b)=> b.depth - a.depth);
+  c.lineJoin='round'; c.lineCap='round';
+  drawFaceList(c, faces);
+}
+
+// 把一个长方体的可见面（背剔+投影+depth+decal）推入 out。
+// depth=面质心 view 空间 z（越大越远），供 drawScene 统一 per-face 画家排序——不再用易成环的逐盒子分离轴。
+function pushBoxFaces(out, corners, baseC, view, eye, P, sel, warn, m){
+  const cView = corners.map(view.toView);
+  // 造型 decal:仅当开关开、构件有登记且声明了 decals 时启用
+  const det = (DECAL_ON && m && DETAILS[m.type]) ? DETAILS[m.type] : null;
+  const roleMap = (det && det.decals) ? faceRoleMap(m.rot) : null;
+  const frontSteps = m ? Math.round(m.rot/90) : 0;
+  for(const f of BOX_FACES){
+    const wc = f.idx.map(i=>corners[i]);
+    const center = V.scale(wc.reduce((a,p)=>V.add(a,p),[0,0,0]), 1/4);
+    if(V.dot(f.n, V.sub(eye, center)) <= 0) continue;        // 背面剔除
+    const proj = f.idx.map(i=>project(cView[i]));
+    if(proj.some(q=>q===null)) continue;                      // 近平面：整面丢弃
+    const shade = faceShade(f.n) * (f.kind==='top'?1.04:1);
+    const face = {
+      depth: view.toView(center)[2],   // 面质心 view 空间 z（越大越远、越先画）
+      pts: proj.map(q=>[q[0],q[1]]),
+      fill: shadeRGB(baseC, Math.min(1.15,shade)),
+      stroke: warn ? '#C0492E' : (sel ? P.accent : shadeRGB(baseC, shade*0.62)),
+      lw: (warn||sel) ? 2.4 : 0.8,
+      decals: null
+    };
+    // 编译该面 decal:查局部角色 → 取形状 → 双线性映射到屏幕(掠射面自动降级跳过)
+    if(roleMap){
+      const shapes = det.decals[ roleMap[nkey(f.n)] ];
+      if(shapes && shapes.length){
+        const q = faceQuad(corners, f, frontSteps);
+        const S = q.map(ci => { const k=f.idx.indexOf(ci); return [proj[k][0], proj[k][1]]; });
+        if(!degenerate(S)) face.decals = compileShapes(shapes, uvMapper(S), faceAspect(corners,q), baseC, P, shade);
+      }
+    }
+    out.push(face);
+  }
+}
+
+// （旧 cmpAABB 分离轴排序已移除：作为 Array.sort 比较器非传递、对相交子体量退化为质心兜底，
+//   会导致整柜/子体量穿插。现统一由 drawScene 的 per-face 深度排序处理。）
+
+// 画一组面（已定序，直接按顺序绘制）
+function drawFaceList(c, list){
+  for(const f of list){
+    c.beginPath();
+    f.pts.forEach((p,i)=> i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
+    c.closePath();
+    if(f.fill){ c.fillStyle=f.fill; c.fill(); }
+    if(f.stroke){ c.strokeStyle=f.stroke; c.lineWidth=f.lw; c.stroke(); }
+    // 面贴花:在该面填充描边之后画,(u,v)∈[0,1] 恒在四边形内,无需 clip
+    if(f.decals) for(const d of f.decals){
+      if(!d.pts || d.pts.length<2) continue;
+      c.beginPath();
+      d.pts.forEach((p,i)=> i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
+      if(d.closed) c.closePath();
+      if(d.alpha!=null) c.globalAlpha=d.alpha;
+      if(d.fill){ c.fillStyle=d.fill; c.fill(); }
+      if(d.stroke){ c.strokeStyle=d.stroke; c.lineWidth=d.lw; c.stroke(); }
+      if(d.alpha!=null) c.globalAlpha=1;
+    }
+  }
+}
+
+// 房间静物：地板（L 形）+ 三面墙（高 250）+ 窗 + 烟道柱。全部转成面对象塞进 faces。
+function collectRoomFaces(faces, view, P){
+  const p = room.params, B = room.bounds.maxX, R = p.right, L = room.L, fw = p.flueW, CH = CEILING;
+  const wallRGB = hex2rgb(P.wall), floorRGB = hex2rgb(P.floor);
+  // 深度分层（画家算法：depth 越大越远、越先画）：地板 1e5 > 网格 5e4 > 墙 ~1e4 > 室内物体(盒/烟道, 原始 vz)。
+  // 墙加大偏置，保证凸房间外壳恒排在所有室内家具之后——根治盒子被墙吞 / 穿墙。
+  const WALL_BIAS = 1e4;
+
+  // 通用：给定世界四边形 + 朝外法线 + 基色，做背剔 + 投影 + 入列
+  const quad = (pts3d, normal, rgb, kindTop)=>{
+    const center = V.scale(pts3d.reduce((a,q)=>V.add(a,q),[0,0,0]), 1/pts3d.length);
+    if(V.dot(normal, V.sub(view.eye, center)) <= 0) return; // 背面剔除
+    const proj = pts3d.map(q=>project(view.toView(q)));
+    if(proj.some(q=>q===null)) return;
+    const shade = faceShade(normal) * (kindTop?1.0:1);
+    faces.push({
+      pts: proj.map(q=>[q[0],q[1]]),
+      depth: V.scale(pts3d.reduce((a,q)=>V.add(a,view.toView(q)),[0,0,0]),1/pts3d.length)[2] + WALL_BIAS,
+      fill: shadeRGB(rgb, shade),
+      stroke: shadeRGB(rgb, shade*0.8), lw:0.6
+    });
+  };
+
+  // 地板：L 形多边形（法线 +Z）。凹多边形作为单一水平面，画家算法当一整片处理。
+  {
+    const poly3 = room.poly.map(pt=>[pt[0],pt[1],0]);
+    const normal=[0,0,1];
+    const proj = poly3.map(q=>project(view.toView(q)));
+    if(!proj.some(q=>q===null)){
+      const shade = faceShade(normal);
+      faces.push({
+        pts: proj.map(q=>[q[0],q[1]]),
+        depth: V.scale(poly3.reduce((a,q)=>V.add(a,view.toView(q)),[0,0,0]),1/poly3.length)[2] + 1e5, // 地板永远最远，先画
+        fill: shadeRGB(floorRGB, shade),
+        stroke: shadeRGB(floorRGB, shade*0.85), lw:0.6
+      });
+      // 地板网格（50cm）叠一层细线，增强比例观感（裁剪在地板多边形内由覆盖顺序保证够用）
+      addFloorGrid(faces, view, P, B, R);
+    }
+  }
+
+  // 三面墙（内表面朝向房间内侧，法线指向房间内）。墙厚忽略，画成竖直四边形。
+  // 左墙 x=0，内法线 +X，y∈[0,L]
+  wallQuad(quad, [[0,0,0],[0,L,0],[0,L,CH],[0,0,CH]], [1,0,0], wallRGB);
+  // 顶墙 y=R，内法线 -Y，x∈[fw,B]（含窗，窗单独叠浅蓝）
+  wallQuad(quad, [[fw,R,0],[B,R,0],[B,R,CH],[fw,R,CH]], [0,-1,0], wallRGB);
+  // 底墙 y=0，内法线 +Y，x∈[0,B]
+  wallQuad(quad, [[0,0,0],[B,0,0],[B,0,CH],[0,0,CH]], [0,1,0], wallRGB);
+  // 右墙 x=B，内法线 -X，门洞处断成两段：y∈[0,doorFromBottom] 与 [doorFromBottom+doorW, R]
+  const d = room.door;
+  if(d.y0 > 0.5) wallQuad(quad, [[B,0,0],[B,d.y0,0],[B,d.y0,CH],[B,0,CH]], [-1,0,0], wallRGB);
+  if(d.y1 < R-0.5) wallQuad(quad, [[B,d.y1,0],[B,R,0],[B,R,CH],[B,d.y1,CH]], [-1,0,0], wallRGB);
+
+  // 顶墙窗：浅蓝矩形贴在顶墙内表面，离地约 90..210
+  {
+    const win = room.win, z0=90, z1=210;
+    const pts = [[win.x0,R,z0],[win.x1,R,z0],[win.x1,R,z1],[win.x0,R,z1]];
+    const normal=[0,-1,0];
+    const center = V.scale(pts.reduce((a,q)=>V.add(a,q),[0,0,0]),1/4);
+    if(V.dot(normal, V.sub(view.eye, center)) > 0){
+      const proj = pts.map(q=>project(view.toView(q)));
+      if(!proj.some(q=>q===null)){
+        faces.push({
+          pts: proj.map(q=>[q[0],q[1]]),
+          depth: V.scale(pts.reduce((a,q)=>V.add(a,view.toView(q)),[0,0,0]),1/4)[2] + WALL_BIAS - 50, // 贴所属墙内表面、略前于墙，但仍在室内物体之后
+          fill:'rgba(150,196,222,.78)', stroke:'#5E8FB0', lw:1.4
+        });
+      }
+    }
+  }
+
+  // 注：烟道柱已移至 drawScene 的「室内物体」组（与盒子一起参与分离轴排序），不再作为外壳静物。
+}
+function wallQuad(quad, pts, normal, rgb){ quad(pts, normal, rgb, false); }
+
+// 地板网格线（落在 z=0），作为细线面对象。每条线给一点点深度偏置以压在地板上方。
+function addFloorGrid(faces, view, P, B, R){
+  const gridRGB = hex2rgb(P.grid);
+  const lineSeg = (a,b)=>{
+    const pa=project(view.toView(a)), pb=project(view.toView(b));
+    if(!pa||!pb) return;
+    faces.push({
+      pts:[[pa[0],pa[1]],[pb[0],pb[1]]],
+      depth:(pa[2]+pb[2])/2 + 5e4,            // 比构件远、但比地板近，画在地板之上
+      fill:null, stroke:shadeRGB(gridRGB,0.92), lw:0.6
+    });
+  };
+  // 网格步长按房间尺寸自适应（保险：任何尺寸下两个方向各最多约 120 根线），
+  // 避免巨大 bottom/right 时每帧生成数万根线段拖垮渲染。
+  const stepX = Math.max(50, Math.ceil(B/120/50)*50);
+  const stepY = Math.max(50, Math.ceil(R/120/50)*50);
+  for(let gx=0; gx<=B+0.1; gx+=stepX) lineSeg([gx,0,0],[gx,R,0]);
+  for(let gy=0; gy<=R+0.1; gy+=stepY) lineSeg([0,gy,0],[B,gy,0]);
+}
+
+// 主画布当前投影口径（CSS 像素）。命中测试与渲染必须用同一套，否则点击会错位。
+function liveViewport(){
+  const w = canvas.width/dpr, h = canvas.height/dpr;
+  return {w, h, focal:(h/2)/Math.tan(FOV/2)};
+}
+
+function render(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const P = PALETTES[state.paletteIndex];
+  const vp = liveViewport();
+  drawScene(ctx, {P, selectedId:state.selectedId, warnIds:computeWarnings().ids, w:vp.w, h:vp.h, focal:vp.focal});
+}
+
+// ===================== 命中测试（3D 主视图点击 → 最前盒子） =====================
+function pointInPoly(px,py,poly){ // 射线法（任意多边形）
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1], xj=poly[j][0],yj=poly[j][1];
+    if(((yi>py)!==(yj>py)) && px < (xj-xi)*(py-yi)/(yj-yi)+xi) inside=!inside;
+  }
+  return inside;
+}
+// Andrew monotone chain 凸包（点数极少）
+function convexHull(pts){
+  if(pts.length<3) return pts.slice();
+  const ps=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cross=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[]; for(const p of ps){ while(lo.length>=2 && cross(lo[lo.length-2],lo[lo.length-1],p)<=0) lo.pop(); lo.push(p); }
+  const up=[]; for(let i=ps.length-1;i>=0;i--){ const p=ps[i]; while(up.length>=2 && cross(up[up.length-2],up[up.length-1],p)<=0) up.pop(); up.push(p); }
+  lo.pop(); up.pop(); return lo.concat(up);
+}
+function hitTest3D(px,py){
+  // 命中测试必须与渲染共用主画布实时投影口径（cssW/cssH/focal）。
+  // 否则会沿用 drawScene 残留值（含导出尺寸或初值 800/600/600），命中多边形相对实际渲染偏移缩放，点击选错/点不中。
+  const vp = liveViewport();
+  cssW=vp.w; cssH=vp.h; focal=vp.focal;
+  const view = makeView();
+  let best=null, bestDepth=Infinity;
+  for(const m of state.modules){
+    const proj = boxCorners(m).map(c=>project(view.toView(c))).filter(Boolean);
+    if(proj.length<3) continue;
+    const hull = convexHull(proj.map(q=>[q[0],q[1]]));
+    if(pointInPoly(px,py,hull)){
+      const d = view.toView([m.x, m.y, m.baseZ + m.h/2])[2]; // 与渲染同口径：用盒中心视图深度，命中"视觉最前"的盒子
+      if(d<bestDepth){ bestDepth=d; best=m; }
+    }
+  }
+  return best;
+}
+
+// ===================== 相机轨道 / 缩放交互 =====================
+let drag=null;       // {sx, sy, az0, el0}
+let movedFar=false;  // 区分点击与拖拽
+let hoverPending=false, hoverX=0, hoverY=0;  // 悬停光标命中测试用 rAF 节流，避免每个 pointermove 都跑一遍 3D 拾取
+canvas.addEventListener('pointerdown', e=>{
+  const hit = hitTest3D(e.offsetX, e.offsetY);
+  if(hit){
+    if(state.selectedId !== hit.id){ state.selectedId = hit.id; commit(); }
+    return; // 选中后不进入轨道（移动交给俯视小图）
+  }
+  // 空白处：取消选中 + 进入相机轨道
+  if(state.selectedId !== null){ state.selectedId=null; updateInspector(); }
+  drag={sx:e.offsetX, sy:e.offsetY, az0:cam.az, el0:cam.el};
+  movedFar=false;
+  canvas.setPointerCapture(e.pointerId);
+  canvas.classList.add('dragging');
+});
+canvas.addEventListener('pointermove', e=>{
+  if(!drag){
+    // 悬停光标：rAF 合并同一帧内多次移动，每帧最多跑一次 hitTest3D（含全局口径副作用）
+    hoverX=e.offsetX; hoverY=e.offsetY;
+    if(!hoverPending){ hoverPending=true;
+      requestAnimationFrame(()=>{ hoverPending=false; canvas.style.cursor = hitTest3D(hoverX,hoverY) ? 'pointer' : 'grab'; }); }
+    return;
+  }
+  const k=0.008;
+  cam.az = drag.az0 + (e.offsetX-drag.sx)*k;
+  cam.el = clamp(drag.el0 - (e.offsetY-drag.sy)*k, 5*Math.PI/180, 85*Math.PI/180);
+  if(Math.abs(e.offsetX-drag.sx)+Math.abs(e.offsetY-drag.sy) > 3) movedFar=true;
+  render();
+});
+function endOrbit(){ if(!drag) return; drag=null; canvas.classList.remove('dragging'); }
+canvas.addEventListener('pointerup', endOrbit);
+canvas.addEventListener('pointercancel', endOrbit);
+canvas.addEventListener('wheel', e=>{ e.preventDefault();
+  const f = e.deltaY<0 ? 1/1.1 : 1.1;
+  const diag = Math.hypot(room.bounds.maxX, room.bounds.maxY, CEILING);
+  cam.dist = clamp(cam.dist*f, diag*0.6, diag*4);
+  render();
+}, {passive:false});
+
+function resetCamera(){
+  cam.az = Math.PI*0.30; cam.el = Math.PI*0.32;
+  cam.target = [room.bounds.maxX/2, room.bounds.maxY/2, 90];
+  cam.dist = Math.hypot(room.bounds.maxX, room.bounds.maxY, CEILING)*1.55;
+  render();
+}
+
+// ===================== 右下角俯视小图（退化为 2D 正交，复用 footprint/吸附） =====================
+const mini = document.getElementById('mini');
+const mctx = mini.getContext('2d');
+const miniView = {scale:1, panX:0, panY:0};
+let miniDrag=null; // {id, ox, oy}
+
+function miniFit(){
+  const W=mini.width, H=mini.height, pad=14;
+  const rw=room.bounds.maxX, rh=room.bounds.maxY;
+  const s=Math.min((W-2*pad)/rw, (H-2*pad)/rh);
+  miniView.scale=s;
+  miniView.panX=(W-rw*s)/2;
+  miniView.panY=(H+rh*s)/2; // 世界 y=0 落在下方
+}
+const mW2SX=v=> miniView.panX + v*miniView.scale;
+const mW2SY=v=> miniView.panY - v*miniView.scale;
+const mS2WX=v=> (v-miniView.panX)/miniView.scale;
+const mS2WY=v=> (miniView.panY-v)/miniView.scale;
+
+function renderMini(){
+  const P=PALETTES[state.paletteIndex];
+  mctx.clearRect(0,0,mini.width,mini.height);
+  // 地板 L 形
+  mctx.beginPath();
+  room.poly.forEach((pt,i)=>{ const x=mW2SX(pt[0]),y=mW2SY(pt[1]); i?mctx.lineTo(x,y):mctx.moveTo(x,y); });
+  mctx.closePath(); mctx.fillStyle=P.floor; mctx.fill();
+  mctx.save(); mctx.clip();
+  // 网格
+  mctx.strokeStyle=P.grid; mctx.lineWidth=1;
+  for(let gx=0;gx<=room.bounds.maxX;gx+=50){ mctx.beginPath(); mctx.moveTo(mW2SX(gx),mW2SY(0)); mctx.lineTo(mW2SX(gx),mW2SY(room.bounds.maxY)); mctx.stroke(); }
+  for(let gy=0;gy<=room.bounds.maxY;gy+=50){ mctx.beginPath(); mctx.moveTo(mW2SX(0),mW2SY(gy)); mctx.lineTo(mW2SX(room.bounds.maxX),mW2SY(gy)); mctx.stroke(); }
+  mctx.restore();
+  // 烟道
+  const f=room.flue;
+  mctx.fillStyle=P.flue;
+  mctx.fillRect(mW2SX(f.minX), mW2SY(f.maxY), (f.maxX-f.minX)*miniView.scale, (f.maxY-f.minY)*miniView.scale);
+  // 构件矩形（floor 实心，upper 半透明描边）
+  const order=[...floorMods(), ...state.modules.filter(m=>MODULE_TYPES[m.type].layer==='upper')];
+  const warn=computeWarnings();
+  for(const m of order){
+    const fp=footprint(m);
+    const x=mW2SX(fp.minX), y=mW2SY(fp.maxY), w=fp.sx*miniView.scale, h=fp.sy*miniView.scale;
+    const up=MODULE_TYPES[m.type].layer==='upper';
+    const base=baseColorOf(m,P);
+    mctx.save(); if(up) mctx.globalAlpha=0.55;
+    mctx.fillStyle=shadeRGB(base,1); mctx.fillRect(x,y,w,h);
+    mctx.strokeStyle= warn.ids.has(m.id)?'#C0492E':(m.id===state.selectedId?P.accent:shadeRGB(base,0.6));
+    mctx.lineWidth= m.id===state.selectedId?2.5:1;
+    mctx.strokeRect(x,y,w,h);
+    mctx.restore();
+  }
+  // 墙框
+  mctx.strokeStyle=P.line; mctx.lineWidth=1.5;
+  mctx.beginPath();
+  room.poly.forEach((pt,i)=>{ const x=mW2SX(pt[0]),y=mW2SY(pt[1]); i?mctx.lineTo(x,y):mctx.moveTo(x,y); });
+  mctx.closePath(); mctx.stroke();
+}
+
+function miniHitTest(wx,wy){
+  const order=[...state.modules.filter(m=>MODULE_TYPES[m.type].layer==='upper'), ...floorMods()];
+  for(const m of order){ const fp=footprint(m); if(wx>=fp.minX&&wx<=fp.maxX&&wy>=fp.minY&&wy<=fp.maxY) return m; }
+  return null;
+}
+mini.addEventListener('pointerdown', e=>{
+  const wx=mS2WX(e.offsetX), wy=mS2WY(e.offsetY);
+  const hit=miniHitTest(wx,wy);
+  if(hit){ state.selectedId=hit.id; miniDrag={id:hit.id, ox:wx-hit.x, oy:wy-hit.y};
+    mini.setPointerCapture(e.pointerId); commit(); }
+  else { state.selectedId=null; commit(); }
+});
+mini.addEventListener('pointermove', e=>{
+  if(!miniDrag) return;
+  const m=state.modules.find(x=>x.id===miniDrag.id); if(!m) return;
+  m.x=mS2WX(e.offsetX)-miniDrag.ox; m.y=mS2WY(e.offsetY)-miniDrag.oy;
+  snapModule(m); clampModule(m); renderOnly(); updateInspectorValues();
+});
+function miniUp(){ if(!miniDrag) return; miniDrag=null; commit(); }
+mini.addEventListener('pointerup', miniUp);
+mini.addEventListener('pointercancel', miniUp);
+
+// 吸附 / 边界约束（抄自 2D，依赖 room.xLines/yLines，阈值用小图 scale）
+function snapModule(m){
+  const thr=12/miniView.scale;
+  const xL=[...room.xLines], yL=[...room.yLines];
+  for(const o of floorMods()){ if(o.id===m.id)continue; const f=footprint(o); xL.push(f.minX,f.maxX); yL.push(f.minY,f.maxY); }
+  const fp=footprint(m);
+  let best=null;
+  for(const L of xL) for(const edge of [fp.minX,fp.maxX]){ const dd=L-edge; if(Math.abs(dd)<thr && (best==null||Math.abs(dd)<Math.abs(best))) best=dd; }
+  if(best==null){ const r=Math.round(fp.minX/5)*5-fp.minX; if(Math.abs(r)<thr) best=r; }
+  if(best!=null) m.x+=best;
+  best=null;
+  for(const L of yL) for(const edge of [fp.minY,fp.maxY]){ const dd=L-edge; if(Math.abs(dd)<thr && (best==null||Math.abs(dd)<Math.abs(best))) best=dd; }
+  if(best==null){ const r=Math.round(fp.minY/5)*5-fp.minY; if(Math.abs(r)<thr) best=r; }
+  if(best!=null) m.y+=best;
+}
+function clampModule(m){ const fp=footprint(m), b=room.bounds; let dx=0,dy=0;
+  if(fp.minX<b.minX)dx=b.minX-fp.minX; if(fp.maxX>b.maxX)dx=b.maxX-fp.maxX;
+  if(fp.minY<b.minY)dy=b.minY-fp.minY; if(fp.maxY>b.maxY)dy=b.maxY-fp.maxY; m.x+=dx; m.y+=dy; }
+
+// ===================== 冲突检查（抄自 2D，含烟道 / 门洞 / 越界 / 重叠） =====================
+function computeWarnings(){
+  const ids=new Set(), msgs=new Set();
+  const floors=floorMods();
+  for(let i=0;i<floors.length;i++) for(let j=i+1;j<floors.length;j++){
+    if(rectsOverlap(footprint(floors[i]),footprint(floors[j]))){ ids.add(floors[i].id); ids.add(floors[j].id); msgs.add('有构件重叠'); }
+  }
+  for(const m of floors){
+    const fp=footprint(m);
+    if(rectsOverlap(fp,room.flue)){ ids.add(m.id); msgs.add(`${MODULE_TYPES[m.type].label} 压到烟道`); }
+    if(fp.maxX>room.bounds.maxX-2 && fp.maxY>room.door.y0 && fp.minY<room.door.y1){ ids.add(m.id); msgs.add(`${MODULE_TYPES[m.type].label} 挡住门洞/开口`); }
+    if(fp.minX<-1||fp.maxX>room.bounds.maxX+1||fp.minY<-1||fp.maxY>room.bounds.maxY+1){ ids.add(m.id); msgs.add(`${MODULE_TYPES[m.type].label} 超出房间`); }
+  }
+  return {ids, msgs:[...msgs]};
+}
+
+// ===================== 键盘（旋转 / 删除 / 方向键微调） =====================
+document.addEventListener('keydown', e=>{
+  if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const m=state.modules.find(x=>x.id===state.selectedId);
+  if(!m) return;
+  if(e.key==='r'||e.key==='R'){ m.rot=(m.rot+90)%360; clampModule(m); commit(); }
+  else if(e.key==='Delete'||e.key==='Backspace'){ e.preventDefault(); deleteSelected(); }
+  else if(e.key.startsWith('Arrow')){ e.preventDefault(); const s=e.shiftKey?5:1;
+    if(e.key==='ArrowLeft')m.x-=s; if(e.key==='ArrowRight')m.x+=s; if(e.key==='ArrowUp')m.y+=s; if(e.key==='ArrowDown')m.y-=s;
+    clampModule(m); commit(); }
+});
+
+// ===================== 增删构件 =====================
+function addModule(type){ const t=MODULE_TYPES[type];
+  const m={id:uid(), type, x:room.bounds.maxX/2, y:room.bounds.maxY/2, w:t.w, d:t.d, rot:0,
+           h:DEFAULT_H[type], baseZ:DEFAULT_BASEZ[type]};
+  state.modules.push(m); state.selectedId=m.id; commit(); hideHintSoon();
+}
+function deleteSelected(){ state.modules=state.modules.filter(m=>m.id!==state.selectedId); state.selectedId=null; commit(); }
+
+// ===================== 右侧面板 =====================
+// 仅刷新属性框里的数值（拖拽时用，不重建 DOM 以免抢焦点）
+function updateInspectorValues(){
+  const m=state.modules.find(x=>x.id===state.selectedId); if(!m) return;
+  const setV=(id,v)=>{ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=v; };
+  setV('inX', Math.round(m.x)); setV('inY', Math.round(m.y));
+}
+
+function updateInspector(){
+  const m=state.modules.find(x=>x.id===state.selectedId);
+  const selBody=document.getElementById('selBody');
+  if(m){
+    const t=MODULE_TYPES[m.type];
+    selBody.className='';
+    selBody.innerHTML=`
+      <div class="row"><b>${t.label}</b>${t.layer==='upper'?'<span class="muted">（吊装层）</span>':''}</div>
+      <div class="row"><label>宽 W</label><input type="number" id="inW" value="${m.w}" min="20" max="400" step="5"> cm</div>
+      <div class="row"><label>深 D</label><input type="number" id="inD" value="${m.d}" min="20" max="400" step="5"> cm</div>
+      <div class="row"><label>高 H</label><input type="number" id="inH" value="${m.h}" min="10" max="250" step="5"> cm</div>
+      <div class="row"><label>离地</label><input type="number" id="inZ" value="${m.baseZ}" min="0" max="250" step="5"> cm</div>
+      <div class="row"><label>X</label><input type="number" id="inX" value="${Math.round(m.x)}" step="1"> cm</div>
+      <div class="row"><label>Y</label><input type="number" id="inY" value="${Math.round(m.y)}" step="1"> cm</div>
+      <div class="row">
+        <button class="ibtn" id="btnRot">旋转 90°（${m.rot}°）</button>
+        <button class="ibtn danger" id="btnDel">删除</button>
+      </div>
+      <div class="muted" style="margin-top:6px;">顶面高度 ${m.baseZ+m.h} cm（层高 ${CEILING}）</div>`;
+    // 宽深高离地：oninput 实时改+重画，onchange 才存盘（节流）
+    // skipEmpty=true 时，输入框被清空/非法字符不应用（避免坐标类字段瞬移到 0）
+    const bindNum=(id,apply,skipEmpty)=>{
+      const el=document.getElementById(id);
+      el.oninput=ev=>{
+        if(skipEmpty){ const s=ev.target.value.trim(); if(s===''){return;} const v=+s; if(isNaN(v)){return;} apply(v); }
+        else { apply(+ev.target.value); }
+        renderOnly();
+      };
+      el.onchange=()=>{ const cur=state.modules.find(x=>x.id===state.selectedId); if(cur){clampHeight(cur);clampModule(cur);} commit(); };
+    };
+    bindNum('inW', v=>{ m.w=Math.max(20,v||m.w); clampModule(m); });
+    bindNum('inD', v=>{ m.d=Math.max(20,v||m.d); clampModule(m); });
+    bindNum('inH', v=>{ m.h=Math.max(10,v||m.h); clampHeight(m); });
+    // 离地允许真 0，但清空时不应用；X/Y 允许负值，同样清空时不应用
+    bindNum('inZ', v=>{ m.baseZ=Math.max(0,v); clampHeight(m); }, true);
+    bindNum('inX', v=>{ m.x=v; clampModule(m); }, true);
+    bindNum('inY', v=>{ m.y=v; clampModule(m); }, true);
+    document.getElementById('btnRot').onclick=()=>{ m.rot=(m.rot+90)%360; clampModule(m); commit(); };
+    document.getElementById('btnDel').onclick=deleteSelected;
+  } else {
+    selBody.className='muted'; selBody.textContent='未选中构件。点 3D 盒子或下方列表来编辑。';
+  }
+
+  // 构件列表
+  const lb=document.getElementById('listBody'); lb.innerHTML='';
+  const P=PALETTES[state.paletteIndex];
+  if(state.modules.length===0){ lb.innerHTML='<li class="muted" style="cursor:default">暂无构件，从左侧添加。</li>'; }
+  for(const mm of state.modules){
+    const t=MODULE_TYPES[mm.type];
+    const li=document.createElement('li');
+    if(mm.id===state.selectedId) li.className='on';
+    li.innerHTML=`<span class="sw" style="background:${shadeRGB(baseColorOf(mm,P),1)}"></span>
+      <span class="nm">${t.label}</span>
+      <span class="dim">${mm.w}×${mm.d}×${mm.h}</span>`;
+    li.onclick=()=>{ state.selectedId=mm.id; commit(); };
+    lb.appendChild(li);
+  }
+
+  // 冲突
+  const warn=computeWarnings(), wb=document.getElementById('warnBody');
+  wb.innerHTML = warn.msgs.length ? warn.msgs.map(x=>`<li>⚠ ${x}</li>`).join('') : '<li class="good">✓ 暂无冲突</li>';
+
+  // 房间信息
+  const p=room.params, area=((p.bottom*p.right - p.flueW*p.flueD)/10000).toFixed(2);
+  document.getElementById('roomBody').innerHTML=`
+    L 形 · 底 ${p.bottom} × 进深 ${p.right} cm<br>净面积约 <b>${area} m²</b> · 层高 <b>${CEILING} cm</b><br>
+    <span class="muted">烟道 ${p.flueW}×${p.flueD}（左上）· 门洞 ${p.doorW}（右）· 窗 ${p.winW}（顶）</span>`;
+
+  renderMini();
+}
+
+// ===================== 顶栏 / 构件库 / 配色 =====================
+function buildToolbar(){
+  const tb=document.getElementById('toolbar'); tb.innerHTML='';
+  const P=PALETTES[state.paletteIndex];
+  for(const g of TOOL_GROUPS){
+    const h=document.createElement('div'); h.className='grp'; h.textContent=g.name; tb.appendChild(h);
+    for(const type of g.types){ const t=MODULE_TYPES[type];
+      const b=document.createElement('button'); b.className='mbtn';
+      const role=t.role; const col=(role==='cabinet'||role==='counter')?P.cabinet:P.appliance;
+      b.innerHTML=`<span class="ic" style="background:${col};border:1px solid ${P.cabinetEdge}"></span>${t.label}<span class="sz">${t.w}×${t.d}</span>`;
+      b.onclick=()=>addModule(type); tb.appendChild(b);
+    }
+  }
+}
+function buildPaletteSel(){
+  const ps=document.getElementById('paletteSel'); ps.innerHTML='';
+  PALETTES.forEach((p,i)=>{ const s=document.createElement('div'); s.className='swatch'+(i===state.paletteIndex?' on':'');
+    s.style.background=p.cabinet; s.title=p.name; s.onclick=()=>{ state.paletteIndex=i; buildToolbar(); buildPaletteSel(); buildPalBody(); commit(); }; ps.appendChild(s); });
+}
+function buildPalBody(){
+  const pb=document.getElementById('palBody'); pb.innerHTML='';
+  PALETTES.forEach((p,i)=>{
+    const b=document.createElement('button'); b.className='ibtn'; b.style.marginRight='6px'; b.style.marginBottom='6px';
+    if(i===state.paletteIndex){ b.style.borderColor='var(--accent)'; b.style.fontWeight='600'; }
+    b.innerHTML=`<span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:${p.cabinet};vertical-align:middle;margin-right:5px"></span>${p.name}`;
+    b.onclick=()=>{ state.paletteIndex=i; buildToolbar(); buildPaletteSel(); buildPalBody(); commit(); };
+    pb.appendChild(b);
+  });
+}
+let hintTimer=null;
+function hideHintSoon(){ const h=document.getElementById('hint'); clearTimeout(hintTimer); hintTimer=setTimeout(()=>h.style.opacity=0, 3500); }
+
+// ===================== PNG 导出（独立高分辨率 canvas 重画一遍） =====================
+function exportPNG(){
+  const P=PALETTES[state.paletteIndex];
+  const W=1600, H=1100, footer=42;
+  const ec=document.createElement('canvas'); ec.width=W; ec.height=H+footer;
+  const c=ec.getContext('2d');
+  c.fillStyle='#E7DCC8'; c.fillRect(0,0,ec.width,ec.height);
+  const sel=state.selectedId; state.selectedId=null; // 导出不带选中描边
+  const f=(H/2)/Math.tan(FOV/2);
+  drawScene(c, {P, selectedId:null, warnIds:new Set(), w:W, h:H, focal:f});
+  state.selectedId=sel;
+  // 页脚
+  c.fillStyle=P.text; c.font='600 22px sans-serif'; c.textAlign='left'; c.textBaseline='middle';
+  c.fillText('厨房 3D 概念图 · '+P.name, 28, H+footer/2);
+  c.font='14px sans-serif'; c.textAlign='right';
+  c.fillText(`底 ${room.params.bottom} × 进深 ${room.params.right} × 层高 ${CEILING} cm`, ec.width-28, H+footer/2);
+  download(ec.toDataURL('image/png'), 'kitchen-3d.png');
+}
+function download(url,name){ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+
+// ===================== 导入 2D JSON（补 h/baseZ，强制层高 250） =====================
+function importFrom2D(file){
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const j=JSON.parse(r.result);
+    if(!Array.isArray(j.modules)) throw 0;
+    state.paletteIndex=safePaletteIndex(j.paletteIndex);
+    state.roomParams=sanitizeRoomParams(j.roomParams); // 内部已强制 ceiling=250
+    state.modules=j.modules.map(enrich);
+    state.selectedId=null;
+    room=buildRoom(state.roomParams);
+    miniFit(); resetCamera();
+    buildToolbar(); buildPaletteSel(); buildPalBody(); commit();
+  }catch(e){ alert('文件格式不对，导入失败。请选择 2D 平面规划器导出的 .json'); } };
+  r.readAsText(file);
+}
+
+function modal(id,show){ document.getElementById(id).classList.toggle('show',show); }
+// 按钮短暂显示提示文字再复原：给「设为默认」一个无弹窗的成功反馈
+function flashBtn(id,msg){ const b=document.getElementById(id); if(b._t) return; const old=b.textContent; b.textContent=msg; b._t=setTimeout(()=>{ b.textContent=old; b._t=null; },1200); }
+
+// ===================== 启动 =====================
+function init(){
+  state=loadState(); room=buildRoom(state.roomParams);
+  buildToolbar(); buildPaletteSel(); buildPalBody();
+  miniFit();
+  cam.target=[room.bounds.maxX/2, room.bounds.maxY/2, 90];
+  cam.dist=Math.hypot(room.bounds.maxX, room.bounds.maxY, CEILING)*1.55;
+  resizeCanvas(); updateInspector(); hideHintSoon();
+
+  document.getElementById('btnReset').onclick=resetCamera;
+  document.getElementById('btnPng').onclick=exportPNG;
+  document.getElementById('btnClear').onclick=()=>{ if(confirm('清空所有构件？房间保留。')){ state.modules=[]; state.selectedId=null; commit(); } };
+  document.getElementById('btnSetDefault').onclick=()=>{
+    localStorage.setItem(LS3_DEF, JSON.stringify({paletteIndex:state.paletteIndex, roomParams:state.roomParams, modules:state.modules}));
+    flashBtn('btnSetDefault','已保存为默认 ✓');
+  };
+  document.getElementById('btnRestoreDefault').onclick=()=>{
+    if(!confirm('恢复到已保存的默认布局？当前画面会被覆盖（默认本身不变）。')) return;
+    state=defaultState(); room=buildRoom(state.roomParams);
+    miniFit(); resetCamera();
+    buildToolbar(); buildPaletteSel(); buildPalBody(); commit();
+  };
+  document.getElementById('btnHelp').onclick=()=>modal('helpModal',true);
+  document.getElementById('helpClose').onclick=()=>modal('helpModal',false);
+  document.getElementById('zoomIn').onclick=()=>{ const diag=Math.hypot(room.bounds.maxX,room.bounds.maxY,CEILING); cam.dist=clamp(cam.dist/1.15,diag*0.6,diag*4); render(); };
+  document.getElementById('zoomOut').onclick=()=>{ const diag=Math.hypot(room.bounds.maxX,room.bounds.maxY,CEILING); cam.dist=clamp(cam.dist*1.15,diag*0.6,diag*4); render(); };
+  document.getElementById('btnImport').onclick=()=>document.getElementById('importFile').click();
+  document.getElementById('importFile').onchange=e=>{ if(e.target.files[0]){ importFrom2D(e.target.files[0]); e.target.value=''; } };
+  document.querySelectorAll('.modal').forEach(mm=>mm.onclick=e=>{ if(e.target===mm) mm.classList.remove('show'); });
+
+  window.addEventListener('resize', ()=>resizeCanvas());
+}
+init();
+</script>
+</body>
+</html>

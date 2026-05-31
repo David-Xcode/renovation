@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>厨房装修监工指南 · 装修合同篇</title>
+<meta name="description" content="厨房装修施工合同成稿：基于上海2025示范文本，已填入最高等级标准与推荐材料（石英石台面/E0-ENF门板/一级能效烟灶/A类瓷砖），四阶段付款、增项5%上限、质量验收红线、保修2年/防水5年。可打印。">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* 合同页：条款排版 + 填空样式 + 打印 */
+  .clause { margin: 1.6rem 0; }
+  .clause__h { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; margin-bottom: .6rem; display:flex; align-items:baseline; gap:.6rem; }
+  .clause__h .no { font-family: var(--font-mono); font-size: .8rem; color: var(--red); border:1.5px solid var(--red); border-radius:999px; padding:.1rem .55rem; flex:none; }
+  .clause p, .clause li { font-size: .96rem; color: var(--ink); }
+  .clause ol { padding-left: 1.4rem; }
+  .clause ol li { margin: .4rem 0; }
+  .fill { display:inline-block; min-width:7rem; border-bottom:1px solid var(--ink-soft); color:var(--ink-faint); padding:0 .4rem; }
+  .party { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; margin:1.2rem 0; }
+  .party__box { border:1px solid var(--line); border-radius:var(--radius); padding:1.1rem 1.3rem; background:var(--paper-card); }
+  .party__box h4 { font-family:var(--font-display); margin-bottom:.6rem; }
+  .party__box .row2 { font-size:.92rem; margin:.4rem 0; color:var(--ink-soft); }
+  .sign { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:2.5rem; }
+  @media print {
+    @page { margin: 16mm; }
+    .nav, .progress, .handoff, footer .disclaimer { display:none !important; }
+    body { background:#fff !important; background-image:none !important; font-size:11pt; color:#000; }
+    .hero { padding: 0 0 1rem; }
+    .creed { background:#fff; color:#000; border:1px solid #000; }
+    .creed::before { display:none; }
+    .creed__text, .creed__text b { color:#000; }
+    .section { padding:.6rem 0; }
+    .table-wrap, .clause, .callout, .party__box { break-inside: avoid; }
+    a { color:#000; text-decoration:none; }
+  }
+  @media (max-width:720px){ .sign { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="progress" role="presentation"></div>
+
+<nav class="nav" aria-label="主导航">
+  <a class="nav__brand" href="index.html"><span class="mark">厨</span>厨房装修监工指南</a>
+  <div class="nav__tabs">
+    <a class="nav__tab" href="index.html"><span class="idx">01</span>施工监工篇</a>
+    <a class="nav__tab" href="materials-contract.html"><span class="idx">02</span>选材合同篇</a>
+    <a class="nav__tab" href="materials-standards.html"><span class="idx">03</span>材料标准篇</a>
+    <a class="nav__tab" href="materials-list.html"><span class="idx">04</span>材料清单篇</a>
+    <a class="nav__tab" href="contract.html" aria-current="page"><span class="idx">05</span>装修合同篇</a>
+    <a class="nav__tab" href="kitchen-planner.html"><span class="idx">▦</span>平面规划器</a>
+    <a class="nav__tab" href="kitchen-3d.html"><span class="idx">▣</span>3D 概念图</a>
+    <a class="nav__tab" href="kitchen-design.html"><span class="idx">✓</span>设计方案</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero__kicker">基于上海 2025 示范文本 · 已填入推荐标准</div>
+  <h1 class="hero__title">一份<em>定好标准</em>的<br>厨房装修合同</h1>
+  <p class="hero__lede">
+    这是一份可直接用的<strong>成稿合同</strong>：把前几篇坐实的最高等级标准与推荐材料都写进了"材料与质量标准"和"验收"条款，
+    付款卡在验收节点、增项锁 5%、保修 2 年/防水 5 年。<strong>带横线处填你的信息，加粗推荐值可改。</strong>可打印签署。
+  </p>
+  <div class="hero__meta">
+    <span class="chip">四阶段付款</span>
+    <span class="chip">增项 ≤ 5%</span>
+    <span class="chip">验收锚定 GB 国标</span>
+    <span class="chip">保修 2 年 / 防水 5 年</span>
+    <span class="chip">Ctrl+P 可打印</span>
+  </div>
+</header>
+
+<div class="creed" data-reveal>
+  <div class="creed__label">这份合同的骨架</div>
+  <p class="creed__text">
+    <b>钱卡在验收节点</b>、<b>增项锁 5% + 变更单</b>、<b>验收认 GB 国标硬指标</b>、<b>主材写死品牌型号</b>。
+  </p>
+</div>
+
+<main class="wrap">
+
+  <div class="callout callout--warn" data-reveal>
+    <span class="callout__tag">⚠ 使用说明 · 务必先读</span>
+    <p>本合同据《上海市室内装饰装修施工合同示范文本（2025版）》框架改写，已填入本系列调研推荐的标准与材料。<strong>这是模板，不是法律意见</strong>；签署前请：①核对当地最新示范文本与法规；②与施工方逐条确认；③付款比例、工期、价款按实际谈判填写；④重大金额建议请专业人士过目。带 <span class="fill">　　　</span> 处为待填，<strong>加粗项为推荐值、可协商修改</strong>。</p>
+  </div>
+
+  <!-- 缔约方 -->
+  <section class="section" id="parties">
+    <div class="section__head">
+      <span class="section__num">—</span>
+      <h2 class="section__title">家庭厨房装饰装修施工合同<small>CONTRACT · 成稿示例</small></h2>
+    </div>
+    <div class="party">
+      <div class="party__box">
+        <h4>发包方（甲方 · 业主）</h4>
+        <div class="row2">姓名：<span class="fill">　　　　　　</span></div>
+        <div class="row2">身份证号：<span class="fill">　　　　　　</span></div>
+        <div class="row2">联系电话：<span class="fill">　　　　　　</span></div>
+        <div class="row2">工程地址：<span class="fill">　　　　　　</span></div>
+      </div>
+      <div class="party__box">
+        <h4>承包方（乙方 · 装修公司）</h4>
+        <div class="row2">企业名称：<span class="fill">　　　　　　</span></div>
+        <div class="row2">营业执照/资质：<span class="fill">　　　　　　</span></div>
+        <div class="row2">项目负责人/电话：<span class="fill">　　　　　　</span></div>
+        <div class="row2">地址：<span class="fill">　　　　　　</span></div>
+      </div>
+    </div>
+    <p style="font-size:.92rem;color:var(--ink-soft)">依据《民法典》合同编及相关规定，双方就甲方厨房装饰装修工程，在平等自愿、协商一致基础上签订本合同。</p>
+  </section>
+
+  <!-- 条款 -->
+  <section class="section" id="clauses">
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第一条</span>工程概况</div>
+      <ol>
+        <li>工程内容：<strong>厨房</strong>整体装饰装修（拆除、水电、防水、瓦工、吊顶、橱柜、台面、燃气配合、厨电安装、收口）。</li>
+        <li>户型尺寸：<strong>L 形，净面积约 8.06 ㎡，层高 250 cm</strong>（以现场实测/设计方案为准，详见《设计方案》附件）。</li>
+        <li>承包方式：☐ 全包（含主材）　☐ 半包（辅料+人工，主材甲供）— 实际：<span class="fill">　　　</span>。</li>
+        <li>设计图纸与《材料清单》《设计方案》作为本合同附件，与正文具有同等效力。</li>
+      </ol>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第二条</span>材料与质量标准（核心 · 已锁定推荐值）</div>
+      <p>主材须列明品牌/型号/规格/单价，并满足下表标准。凡推荐性国标（GB/T）经写入本表即对双方具约束力。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>部位</th><th>约定材料/规格（可改）</th><th>须满足标准</th><th>等级要求</th></tr></thead>
+          <tbody>
+            <tr class="row-must"><td>瓷砖/石材放射性</td><td>地砖瓷质砖、墙砖釉面砖</td><td><span class="spec">GB 6566-2010</span></td><td><span class="badge badge--must">A 类</span>（检测报告）</td></tr>
+            <tr><td>地砖防滑</td><td>瓷质砖（吸水率≤0.5%）</td><td><span class="spec">GB/T 4100 / 35153</span></td><td>湿态摩擦>0.60</td></tr>
+            <tr class="row-must"><td>橱柜柜体/门板环保</td><td><strong>双饰面板 / 多层实木</strong></td><td><span class="spec">GB 18580 / GB·T 39600</span></td><td><span class="badge badge--must">E0 或 ENF</span></td></tr>
+            <tr><td>台面</td><td><strong>石英石 2.0cm</strong>（或岩板 ≥12mm）</td><td><span class="spec">GB/T 44309</span>（岩板）</td><td>无渗色、拼缝平整</td></tr>
+            <tr><td>橱柜五金</td><td><strong>阻尼铰链+三节轨</strong>（Blum/Hettich/DTC 同级）</td><td><span class="spec">QB/T 2189 / 2454</span></td><td>耐久 ≥ <strong>8 万次</strong></td></tr>
+            <tr class="row-must"><td>燃气灶</td><td>带熄火保护</td><td><span class="spec">GB 30720 / GB 16410</span></td><td><span class="badge badge--must">一级能效</span></td></tr>
+            <tr><td>吸油烟机</td><td>大风量大风压</td><td><span class="spec">GB 29539-2025</span></td><td><strong>一级能效</strong>（注：2026-11 生效）</td></tr>
+            <tr><td>电线/线管</td><td>全铜 BV，阻燃线管</td><td><span class="spec">GB/T 5023 / JG·T 3050</span></td><td>大功率独立回路+30mA 漏保</td></tr>
+            <tr><td>给水管</td><td>卫生级 PP-R，热水加厚</td><td><span class="spec">GB/T 18742.2</span></td><td>热水 S2.5/PN2.5</td></tr>
+            <tr><td>龙头/角阀</td><td>陶瓷阀芯、全铜/304</td><td><span class="spec">GB 18145</span></td><td>低铅/无铅</td></tr>
+            <tr><td>乳胶漆</td><td>净味型</td><td><span class="spec">GB 18582</span></td><td>VOC 达标（检测报告）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.9rem;color:var(--ink-faint)">完整规格见《材料清单篇》。乙方须在进场前提供主材检测报告（CMA/CNAS）；以次充好的，甲方有权拒收并要求更换、计违约。</p>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第三条</span>工期</div>
+      <ol>
+        <li>开工日：<span class="fill">　　年　月　日</span>；约定工期 <span class="fill">　　</span> 日历天，竣工日：<span class="fill">　　年　月　日</span>。</li>
+        <li>因甲方原因（如主材未到、变更）或不可抗力顺延的，工期相应调整并书面确认。</li>
+      </ol>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第四条</span>合同价款与付款节点（钱卡在验收）</div>
+      <p>合同总价（大写）：<span class="fill">　　　　　　</span>元（￥<span class="fill">　　　</span>）。按施工节点分四阶段支付，<strong>每阶段以验收合格为付款前提</strong>：</p>
+      <div class="steps">
+        <div class="step"><div><strong>签约 / 设计预算认可时</strong><span>建议 ≤ 30%　￥<span class="fill">　　</span></span></div></div>
+        <div class="step"><div><strong>水电隐蔽工程验收合格后次日</strong><span>建议 30%　￥<span class="fill">　　</span></span></div></div>
+        <div class="step"><div><strong>瓦工完工、木工基础完工（油漆/收口前）</strong><span>建议 30%　￥<span class="fill">　　</span></span></div></div>
+        <div class="step"><div><strong>竣工验收合格 + 甲醛检测合格后次日</strong><span>建议 ≤ 10–20%（留 5% 质保金）　￥<span class="fill">　　</span></span></div></div>
+      </div>
+      <p style="font-size:.92rem;color:var(--red-deep)"><strong>甲方拒绝一次性付全款。</strong>尾款不少于 10%。质保金 <span class="fill">5</span>% 于保修期满无质量问题后结清。</p>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第五条</span>增项与变更（锁 5%）</div>
+      <ol>
+        <li>除经签证的项目变更外，<strong>竣工结算总价较合同价的增幅不得超过 5%</strong>。</li>
+        <li>任何工程内容、主材、设备的变更，须双方共同签署《工程项目变更单》（注明项目、规格、单价、数量、增减金额）后方可施工；未签证的新增项，甲方有权拒付。</li>
+        <li>乙方不得以"必要增项"为由强迫追加；强行增项甲方可拒绝。</li>
+      </ol>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第六条</span>质量与验收标准（GB 国标硬指标）</div>
+      <p>工程质量须符合国家现行标准。下列为关键验收红线，任一不合格乙方应无条件返工：</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>验收项</th><th>合格标准</th><th>依据</th></tr></thead>
+          <tbody>
+            <tr class="row-must"><td>防水闭水试验</td><td>蓄水 <span class="spec">≥20mm、≥24h</span> 无渗漏（会同物业/楼下）</td><td>GB 55030-2022</td></tr>
+            <tr class="row-must"><td>燃气安装</td><td>软管 ≤2.0m 无接口、表灶净距 ≥300mm、装燃气报警器；<strong>由资质单位施工</strong></td><td>燃气规范 / DB11·T 1197</td></tr>
+            <tr class="row-must"><td>排烟</td><td>横管不与卫生间共用、公共烟道用防倒灌定型产品</td><td>DB11·T 1197</td></tr>
+            <tr class="row-must"><td>瓷砖/石材</td><td>放射性 A 类、空鼓率合格、地砖防滑</td><td>GB 6566 / GB·T 4100</td></tr>
+            <tr class="row-must"><td>橱柜环保</td><td>板材甲醛 E0/ENF，提供检测报告</td><td>GB 18580 / 39600</td></tr>
+            <tr><td>电气</td><td>大功率独立回路、30mA 漏保动作正常</td><td>GB·T 13955</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.9rem;color:var(--ink-faint)">隐蔽工程（水电、防水）须经甲方书面验收并留存影像后方可隐蔽。</p>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第七条</span>保修</div>
+      <ol>
+        <li>自竣工验收合格之日起：<strong>整体工程保修 2 年；有防水要求的厨房间防渗漏保修 5 年。</strong></li>
+        <li>保修期内因施工质量出现的问题，乙方接到通知后 <span class="fill">　</span> 日内免费修复；危及安全的须 24 小时内响应。</li>
+      </ol>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第八条</span>违约责任</div>
+      <ol>
+        <li>乙方逾期竣工，每日按合同总价 <span class="fill">　</span>‰ 支付违约金；甲方逾期付款同理。</li>
+        <li>材料以次充好、不达约定标准的，乙方负责更换并赔偿损失；情节严重甲方可解除合同。</li>
+        <li>未经签证擅自增项或偷工减料的，甲方有权拒付并要求整改。</li>
+      </ol>
+    </div>
+
+    <div class="clause" data-reveal>
+      <div class="clause__h"><span class="no">第九条</span>争议解决与附则</div>
+      <ol>
+        <li>争议先行协商；不成的，提交工程所在地 ☐ 人民法院诉讼 ／ ☐ 仲裁委仲裁。</li>
+        <li>本合同附件：①《设计方案》②《材料清单》③ 报价单（列明品牌规格型号单价）④《工程项目变更单》模板。</li>
+        <li>本合同一式两份，双方各执一份，签字盖章之日起生效。</li>
+      </ol>
+    </div>
+
+    <div class="sign" data-reveal>
+      <div>
+        <p>甲方（签字）：<span class="fill">　　　　</span></p>
+        <p style="margin-top:1.2rem">日期：<span class="fill">　　年　月　日</span></p>
+      </div>
+      <div>
+        <p>乙方（盖章）：<span class="fill">　　　　</span></p>
+        <p style="margin-top:1.2rem">日期：<span class="fill">　　年　月　日</span></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="callout callout--honest" data-reveal>
+    <span class="callout__tag">⌖ 诚实声明</span>
+    <p>付款比例（30/30/30/10）、增项 5% 上限、保修 2 年/防水 5 年来自上海 2025 示范文本与全国《住宅室内装饰装修管理办法》（建设部令第110号），属高置信；但<strong>本文是简化改写的模板</strong>，并非官方文本全文，也不是法律意见。涉及金额与权责的正式签署，请以当地最新官方示范合同为准并咨询专业人士。</p>
+  </div>
+
+</main>
+
+<div class="wrap handoff">
+  <a class="handoff__link" href="materials-list.html">
+    <div>
+      <div class="handoff__meta">← 返回 · 04</div>
+      <div class="handoff__title">材料清单：规格与标准明细</div>
+    </div>
+    <span class="handoff__arrow">←</span>
+  </a>
+</div>
+
+<footer class="footer">
+  <p>厨房装修监工指南 · <a href="index.html">施工监工篇</a> ／ <a href="materials-contract.html">选材合同篇</a> ／ <a href="materials-standards.html">材料标准篇</a> ／ <a href="materials-list.html">材料清单篇</a> ／ <a href="contract.html">装修合同篇</a> ／ <a href="kitchen-planner.html">平面规划器</a> ／ <a href="kitchen-3d.html">3D 概念图</a> ／ <a href="kitchen-design.html">设计方案</a></p>
+  <p class="disclaimer">本合同为基于上海 2025 示范文本的简化成稿模板，已填入本系列推荐的标准与材料，仅供参考，不替代官方文本与法律意见。签署前请核对当地最新法规并咨询专业人士。Ctrl/⌘+P 可打印。</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
