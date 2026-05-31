@@ -222,7 +222,7 @@ function buildRoom(p){
 }
 
 // ===================== 状态 =====================
-const LS = 'kitchen-planner-v4';   // v4=左墙一字工作流布局(11件),旧数据自动让位
+const LS = 'kitchen-planner-v5';   // v5=与 3D 概念图一致的定稿布局(14件),旧数据自动让位
 let state = null, room = null;
 const view = {scale:1, panX:0, panY:0, fitted:false};
 let dpr = 1;
@@ -233,21 +233,24 @@ function uid(){ return 'm'+Date.now().toString(36)+Math.floor(Math.random()*1e4)
 function starterModules(){
   const mk = (type,x,y,rot,w,d)=>({id:uid(),type,x,y,w,d,rot});
   return [
-    // 左墙 = 洗→切→烧 一字工作流
-    mk('dish',   30, 60,90, 60,60),  // 洗碗机60：最下，邻水槽
-    mk('sink',   30,135,90, 90,60),  // 水槽柜90：大单盆
-    mk('base',   30,215,90, 70,60),  // 备餐落台70
-    mk('cooktop',30,290,90, 80,60),  // 天然气双灶80：最上近烟道
-    // 底墙 = 冷藏 + 电器塔柜（从 x60 起）
-    mk('fridge', 90, 30,0,  60,60),  // 60×170 嵌入冰箱
-    mk('tower', 150, 30,0,  60,60),  // 微蒸烤塔柜
-    // 顶墙窗下 = 看景备餐台
-    mk('base',  112,355,180,90,60),  // 窗下备餐台
-    mk('base',  188,355,180,60,60),  // 窗右备餐/小家电台
+    // 左墙：转角 → 水槽 → 洗碗机 → 灶 → 备餐
+    mk('corner', 30, 30, 90, 60,60),  // 左下转角柜
+    mk('sink',   30,110, 90,100,60),  // 水槽柜100
+    mk('dish',   30,182.5,90,45,60),  // 洗碗机45
+    mk('cooktop',30,250, 90, 90,60),  // 双头电磁灶90
+    mk('base',   30,315, 90, 40,60),  // 灶旁备餐落台40
+    // 底墙：转角 ▸ 塔柜 ▸ 冰箱（连续无缝）
+    mk('tower', 102.5,30, 0, 85,60),  // 微蒸烤塔柜：贴转角
+    mk('fridge',180,  35, 0, 70,70),  // 嵌入冰箱70：贴塔柜
+    // 顶墙窗下：3 连备餐台（各50，填满151cm墙）
+    mk('base',   92,360,180, 50,50),  // 窗下备餐台①
+    mk('base',  142,360,180, 50,50),  // 窗下备餐台②
+    mk('base',  192,360,180, 50,50),  // 窗右备餐台③
     // 吊柜
-    mk('hood',   30,291,90, 90,50),  // 油烟机
-    mk('wall',   17,137,90,215,35),  // 左墙顶天吊柜
-    mk('wall',   90, 17,0,   60,35), // 冰箱顶柜
+    mk('hood',   25,250, 90, 90,50),  // 油烟机：灶上方
+    mk('wall',   17.5,132.5,90,145,35),// 左墙吊柜：让开转角与烟机
+    mk('wall',   30, 30, 0, 60,60),   // 转角上方吊柜
+    mk('wall',  180, 30, 0, 70,60),   // 冰箱顶吊柜
   ];
 }
 function defaultState(){ return {paletteIndex:0, roomParams:{...DEFAULT_ROOM}, modules:starterModules(), selectedId:null}; }
