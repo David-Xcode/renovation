@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>厨房装修监工指南 · 报价预算篇</title>
+<meta name="description" content="8.06㎡ L形厨房 北上广国产高端装修完整分项报价：拆除/水电/燃气/防水/瓦工/吊顶/瓷砖/定制橱柜/进口五金/高级石英石台面/水槽龙头/厨电三件(烟机+蒸烤一体+微波炉≈1.5万)/设计/监理/软性费用。基于28个AI agent联网调研北上广2025-2026市场单价并逐项对抗核查。中位≈8.5万、区间6.0-11.7万。灶/洗碗机/冰箱已有不计价仅留位。">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* 报价预算页专属：复用全站组件，仅补充预算专用小样式 + 打印样式 */
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin:1.4rem 0;}
+  .kpi__c{background:var(--paper-card);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.2rem;}
+  .kpi__c--hero{border-top:3px solid var(--red);}
+  .kpi__n{font-family:var(--font-display);font-size:1.7rem;font-weight:600;color:var(--red);line-height:1;}
+  .kpi__l{font-size:.82rem;color:var(--ink-faint);margin-top:.35rem;font-family:var(--font-mono);letter-spacing:.03em;}
+  /* 金额列右对齐、等宽 */
+  .money{font-family:var(--font-mono);font-weight:600;color:var(--red-deep);white-space:nowrap;text-align:right;}
+  .money--sub{color:var(--ink-faint);font-weight:400;font-size:.82rem;}
+  td.num,th.num{text-align:right;}
+  /* 分组表头的说明格弱化：共享 css 是 td .sub（后代），不命中 td 自身，这里补元素级；不加 display:block 以免破坏表格布局 */
+  td.sub{font-size:.82rem;color:var(--ink-faint);font-weight:400;}
+  /* 分组小计行 */
+  tr.row-sub td{background:var(--paper-2);font-weight:600;}
+  tr.row-sub td:first-child{box-shadow:inset 3px 0 0 var(--teal);}
+  /* 总计大行 */
+  tr.row-total td{background:var(--ink);color:var(--paper);font-family:var(--font-display);font-size:1.05rem;}
+  tr.row-total .money{color:var(--amber);}
+  /* 占比条 */
+  .splitbar{display:flex;height:30px;border-radius:var(--radius);overflow:hidden;margin:1.2rem 0 .6rem;border:1px solid var(--line);}
+  .splitbar span{display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.7rem;color:var(--paper);white-space:nowrap;overflow:hidden;}
+  .splitbar .s-base{background:var(--teal);}
+  .splitbar .s-cab{background:var(--red);}
+  .splitbar .s-app{background:var(--amber);}
+  .splitbar .s-pro{background:var(--ink);}
+  .splitlegend{display:flex;flex-wrap:wrap;gap:1.1rem;font-size:.84rem;color:var(--ink-soft);margin-bottom:1rem;}
+  .splitlegend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle;}
+  @media print{
+    @page{margin:13mm;}
+    .nav,.progress,.handoff,#toTop{display:none !important;}
+    body{background:#fff !important;background-image:none !important;font-size:10.5pt;color:#000;}
+    .hero{padding:0 0 1rem;}
+    .section{padding:.7rem 0;break-inside:auto;}
+    .section__head{margin-bottom:.9rem;}
+    .card,.anchor,.kpi__c,.callout,.table-wrap,.step{break-inside:avoid;}
+    a{color:#000;text-decoration:none;}
+    .creed{background:#f0f0f0 !important;color:#000 !important;}
+    .creed__text,.creed__text b{color:#000 !important;}
+    tr.row-total td{background:#000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body>
+<div class="progress" role="presentation"></div>
+
+<nav class="nav" aria-label="主导航">
+  <a class="nav__brand" href="index.html"><span class="mark">厨</span>厨房装修监工指南</a>
+  <div class="nav__tabs">
+    <a class="nav__tab" href="index.html"><span class="idx">01</span>施工监工篇</a>
+    <a class="nav__tab" href="materials-contract.html"><span class="idx">02</span>选材合同篇</a>
+    <a class="nav__tab" href="materials-standards.html"><span class="idx">03</span>材料标准篇</a>
+    <a class="nav__tab" href="materials-list.html"><span class="idx">04</span>材料清单篇</a>
+    <a class="nav__tab" href="contract.html"><span class="idx">05</span>装修合同篇</a>
+    <a class="nav__tab" href="kitchen-appliances.html"><span class="idx">06</span>厨电选配篇</a>
+    <a class="nav__tab" href="kitchen-budget.html" aria-current="page"><span class="idx">07</span>报价预算篇</a>
+    <a class="nav__tab" href="kitchen-planner.html"><span class="idx">▦</span>平面规划器</a>
+    <a class="nav__tab" href="kitchen-3d.html"><span class="idx">▣</span>3D 概念图</a>
+    <a class="nav__tab" href="kitchen-design.html"><span class="idx">✓</span>设计方案</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero__kicker">你的厨房 · 8.06㎡ L 形 · 北上广国产高端 · 完整报价</div>
+  <h1 class="hero__title">一份能<em>照着付款</em>的<br>厨房装修报价</h1>
+  <p class="hero__lede">
+    把你这间 8.06㎡ L 形厨房，从<strong>拆除旧装修</strong>到<strong>厨电进场</strong>逐项算清：每一项都是
+    <strong>北上广 2025–2026 真实市场单价 × 你设计图上的实际用量</strong>，单价经 28 个 AI agent 联网调研 + 逐项对抗核查。
+    档次锚定<strong>国产高端</strong>（方太/老板/凯度旗舰 + 国产高端石英石 + 进口 Blum 五金）。
+    <strong>灶具、洗碗机、冰箱你已有，不计价、只留位留电路。</strong>
+  </p>
+  <div class="hero__meta">
+    <span class="chip">中位 ≈ ¥84,650</span>
+    <span class="chip">区间 ¥6.0万–11.7万</span>
+    <span class="chip">≈ ¥10,500 / ㎡</span>
+    <span class="chip">28 AI agent 调研 · 14 类核查</span>
+    <span class="chip">厨电三件 ≈ 1.5万</span>
+  </div>
+</header>
+
+<div class="creed" data-reveal>
+  <div class="creed__label">这份报价怎么用</div>
+  <p class="creed__text">认<b>中位价做预算</b>、按<b>区间防被宰</b>；把<b>「单价 × 用量」</b>逐项摊开，<br>低价引流的模糊全包价，一摊开就现形。</p>
+</div>
+
+<main class="wrap">
+
+  <!-- 00 报价总览 -->
+  <section class="section" id="overview">
+    <div class="section__head"><span class="section__num">00</span>
+      <h2 class="section__title">报价总览<small>OVERVIEW · 钱花在哪、各占多少</small></h2></div>
+    <div class="kpi" data-reveal>
+      <div class="kpi__c kpi__c--hero"><div class="kpi__n">¥84,650</div><div class="kpi__l">中位总价 · 含厨电不含灶/洗碗机/冰箱</div></div>
+      <div class="kpi__c"><div class="kpi__n">¥10,500</div><div class="kpi__l">每㎡ · 厨房是全屋最贵房间</div></div>
+      <div class="kpi__c"><div class="kpi__n">¥41,250</div><div class="kpi__l">橱柜系统 · 占 49%（含台面/五金）</div></div>
+      <div class="kpi__c"><div class="kpi__n">¥14,500</div><div class="kpi__l">厨电三件 · 烟机+蒸烤一体+微波</div></div>
+    </div>
+
+    <div class="splitbar" aria-hidden="true">
+      <span class="s-base" style="flex:20800">基础工程 24.6%</span>
+      <span class="s-cab" style="flex:41250">橱柜系统 48.7%</span>
+      <span class="s-app" style="flex:14500">厨电 17.1%</span>
+      <span class="s-pro" style="flex:8100">服务 9.6%</span>
+    </div>
+    <div class="splitlegend">
+      <span><i style="background:var(--teal)"></i>基础工程 ¥20,800（拆除/水电/燃气/防水/瓦工/吊顶/瓷砖）</span>
+      <span><i style="background:var(--red)"></i>橱柜系统 ¥41,250（橱柜本体/进口五金/石英石台面/水槽龙头）</span>
+      <span><i style="background:var(--amber)"></i>厨电 ¥14,500（计入的 3 件）</span>
+      <span><i style="background:var(--ink)"></i>专业服务 ¥8,100（设计/监理/软性费用）</span>
+    </div>
+
+    <div class="callout callout--honest" data-reveal>
+      <span class="callout__tag">⌖ 计价口径（先说清，下面所有金额都按这个）</span>
+      <p>① <strong>城市</strong>：北京/上海/广州一线城市 2025–2026 行情；② <strong>档次</strong>：国产高端为主（橱柜欧派/金牌/志邦高端线、台面国产高端石英石、五金升级进口 Blum/Hettich、厨电方太/老板/凯度旗舰）；③ <strong>工况</strong>：存量房局部翻新、电梯可运建渣、中式天然气爆炒；④ <strong>不计价项</strong>：天然气灶、嵌入式洗碗机、嵌入式冰箱<strong>你已有</strong>——报价里只为它们<strong>留柜位、留 16A 独立回路、留上下水/散热</strong>，机器本身不计钱；⑤ 金额为<strong>中位</strong>，区间反映品牌/渠道/国补/复杂度波动；⑥ 不含正规增值税发票税点（如需开票，施工合同部分另加约 6%）。</p>
+    </div>
+  </section>
+
+  <!-- 01 完整分项报价明细 -->
+  <section class="section" id="breakdown">
+    <div class="section__head"><span class="section__num">01</span>
+      <h2 class="section__title">完整分项报价明细<small>ITEMIZED · 单价 × 用量，逐项可核</small></h2></div>
+    <p class="lead-p">
+      下表每一行 = <strong>核查后单价 × 你设计图上的实际用量</strong>。<span class="badge badge--hi">高</span> = 有官方/多源硬锚点（人工费、规范单价）；
+      <span class="badge badge--mid">中</span> = 随品牌/渠道/促销/国补波动（橱柜、台面、厨电）。把这张表打印出来，就能逐项对装修队的报价单。
+    </p>
+    <div class="table-wrap" data-reveal>
+      <table>
+        <caption>8.06㎡ L 形厨房 · 国产高端 · 完整分项报价（中位 / 区间）</caption>
+        <thead>
+          <tr><th>项目</th><th>规格 · 品牌锚点</th><th>用量</th><th>核查后单价</th><th class="num">中位(元)</th><th class="num">区间(元)</th></tr>
+        </thead>
+        <tbody>
+          <!-- A 基础工程 -->
+          <tr><td><strong>A · 基础工程</strong> <span class="badge badge--hi">人工多为高置信</span></td><td colspan="3" class="sub">拆改与隐蔽工程，是付款卡验收的核心</td><td class="num money money--sub">小计</td><td class="num money">20,800</td></tr>
+          <tr><td>拆除旧装修 + 垃圾清运</td><td>砸旧墙地砖 + 拆旧橱柜 + 建渣装袋下楼外运（拼车）</td><td>墙28㎡·地9㎡·柜7延米</td><td>砸砖 28–30/㎡·拆柜 55/延米·清运拼车</td><td class="num money">2,300</td><td class="num money money--sub">1,800–3,000</td></tr>
+          <tr><td>水电改造 <span class="badge badge--hi">高</span></td><td>点位法 + 大功率独立回路·伟星 PPR / 远东 BV 国标铜线</td><td>约8普通点位+3条独立16A+给水10m</td><td>普通点 115/点·大功率 240/条·PPR 58/m</td><td class="num money">3,000</td><td class="num money money--sub">2,500–4,500</td></tr>
+          <tr class="row-must"><td>燃气改造（资质方）</td><td>保留表位·表后移管 + 灶接口复位·属地燃气公司施工</td><td>移管 2–4m</td><td>移管 120/m + 人工</td><td class="num money">800</td><td class="num money money--sub">600–1,500</td></tr>
+          <tr class="row-must"><td>防水（含 48h 闭水）</td><td>德高 K11 / 东方雨虹·包工包料·地面+墙面返高</td><td>涂刷 ≈12㎡</td><td>110/㎡</td><td class="num money">1,300</td><td class="num money money--sub">850–1,700</td></tr>
+          <tr><td>瓦工：贴砖 + 找平 + 美缝 <span class="badge badge--hi">高</span></td><td>薄贴瓷砖胶 + 环氧彩砂美缝 + 局部找平（含辅料）</td><td>墙28㎡ + 地9㎡</td><td>墙 70/㎡·地 80/㎡·美缝 18/m</td><td class="num money">4,200</td><td class="num money money--sub">3,000–5,500</td></tr>
+          <tr><td>集成吊顶</td><td>高端铝镁合金 / 蜂窝大板 + 凉霸 + LED 平板灯模块</td><td>9㎡ + 模块</td><td>板 280/㎡ + 电器模块</td><td class="num money">3,500</td><td class="num money money--sub">2,000–4,500</td></tr>
+          <tr><td>瓷砖材料（国产高端）</td><td>马可波罗 / 东鹏 / 诺贝尔 哑光大规格（含损耗）</td><td>墙28㎡ + 地10㎡</td><td>150/㎡（中高端档）</td><td class="num money">5,700</td><td class="num money money--sub">3,500–8,500</td></tr>
+
+          <!-- B 橱柜系统 -->
+          <tr><td><strong>B · 橱柜系统</strong> <span class="badge badge--mid">随品牌波动</span></td><td colspan="3" class="sub">全屋最大一笔，加价项最多、最易被低价引流后补收</td><td class="num money money--sub">小计</td><td class="num money">41,250</td></tr>
+          <tr><td>定制橱柜本体</td><td>柜体多层实木（灶区可上 304 不锈钢）+ PET 肤感门板·欧派/金牌/志邦高端线（<strong>不含台面</strong>）</td><td>地柜4 + 吊柜3 延米 + 蒸烤塔柜 + L转角</td><td>地柜 3,300/延米·吊柜 1,900/延米·塔柜 4,200</td><td class="num money">25,100</td><td class="num money money--sub">19,000–35,000</td></tr>
+          <tr><td>进口五金升级</td><td>Blum 铰链 + Movento 阻尼导轨 + 凯斯宝玛转角拉篮（<strong>替换国产基础五金的净差价</strong>）</td><td>整厨</td><td>升级包（净差价）</td><td class="num money">4,500</td><td class="num money money--sub">2,500–8,000</td></tr>
+          <tr><td>台面：高级石英石</td><td>赛凯隆 Sinostone / 中迅 15mm·含磨边/挡水/开孔 + 高低台分段加工</td><td>≈4 延米（水槽95/灶83 分两段）</td><td>2,050/延米 + 分段加工 1,300</td><td class="num money">9,500</td><td class="num money money--sub">7,500–13,000</td></tr>
+          <tr><td>水槽 + 抽拉龙头 <span class="badge badge--hi">高</span></td><td>欧琳/普乐美 304 手工大单槽（⌀780）+ 摩恩抽拉龙头 + 下水（整套）</td><td>1 套</td><td>整套 2,150</td><td class="num money">2,150</td><td class="num money money--sub">1,300–3,000</td></tr>
+
+          <!-- C 厨电 -->
+          <tr><td><strong>C · 厨电（计入 3 件）</strong> <span class="badge badge--mid">挂牌/国补两价</span></td><td colspan="3" class="sub">三件合计锚定 ≈1.5万；灶/洗碗机/冰箱你已有不在此列</td><td class="num money money--sub">小计</td><td class="num money">14,500</td></tr>
+          <tr><td>吸油烟机</td><td>老板 L1P（29m³/1300Pa 巡航增压）或 方太 P10.i</td><td>1 台</td><td>5,499 挂牌 / 3,999 国补</td><td class="num money">5,500</td><td class="num money money--sub">3,999–5,499</td></tr>
+          <tr><td>蒸烤一体机</td><td>凯度 SR6028FE22-TD Pro 60L·直喷蒸汽·四合一</td><td>1 台</td><td>4,800</td><td class="num money">4,800</td><td class="num money money--sub">4,400–5,899</td></tr>
+          <tr><td>嵌入式微波炉</td><td>方太 W25800K-E2·变频平板 25L（独立机，非微蒸烤一体）</td><td>1 台</td><td>2,799</td><td class="num money">2,800</td><td class="num money money--sub">2,400–2,999</td></tr>
+          <tr><td>厨电安装 / 烟管 / 配件</td><td>烟管 + 独立止逆阀 + 防溅插座配件 + 基础安装</td><td>—</td><td>—</td><td class="num money">1,400</td><td class="num money money--sub">800–1,500</td></tr>
+
+          <!-- D 专业服务 -->
+          <tr><td><strong>D · 专业服务</strong></td><td colspan="3" class="sub">设计师、监工、装企管理与收尾——「高级」的隐性成本</td><td class="num money money--sub">小计</td><td class="num money">8,100</td></tr>
+          <tr><td>厨房精细化设计</td><td>高低台分段图 + 转角非标点位施工图（随定制订单可减免）</td><td>1 项</td><td>0（随单）– 3,000（独立设计师）</td><td class="num money">3,000</td><td class="num money money--sub">0–5,000</td></tr>
+          <tr><td>第三方监理 / 监工 <span class="badge badge--hi">高</span></td><td>水电 + 防水 + 竣工 节点验收（出书面报告）</td><td>2–3 次</td><td>1,100/次</td><td class="num money">3,000</td><td class="num money money--sub">1,600–4,500</td></tr>
+          <tr><td>软性费用</td><td>装企项目管理费（施工部分 ~10%）+ 成品保护 + 厨房深度开荒保洁</td><td>—</td><td>管理 10% + 保洁/保护</td><td class="num money">2,100</td><td class="num money money--sub">1,500–3,500</td></tr>
+
+          <!-- 总计 -->
+          <tr class="row-total"><td>合计（中位）</td><td>国产高端 · 含厨电 3 件 · 不含灶/洗碗机/冰箱</td><td>8.06㎡</td><td>≈ ¥10,500 / ㎡</td><td class="num money">84,650</td><td class="num money money--sub">59,700–116,700</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-faint);margin-top:.6rem">
+      用量取自<a class="inline" href="kitchen-design.html">设计方案篇</a>（净8.06㎡、墙砖25–30㎡、地砖9㎡、吊顶9㎡、防水12㎡、橱柜地柜4/吊柜3/台面4延米）。
+      单价取自<a class="inline" href="#method">第 07 节</a>的 28-agent 调研核查值。<strong>税金</strong>：如需正规增值税专票，施工合同部分按约 6% 另计（约 ¥1,200–1,800）。
+    </p>
+  </section>
+
+  <!-- 02 厨电三件 ≈1.5万 -->
+  <section class="section" id="appliances">
+    <div class="section__head"><span class="section__num">02</span>
+      <h2 class="section__title">厨电三件 ≈ 1.5万怎么凑<small>APPLIANCES · 烟机 + 蒸烤一体 + 微波炉</small></h2></div>
+    <p class="lead-p">
+      你要的是<strong>独立蒸烤一体机 + 独立微波炉</strong>（不是微蒸烤三合一），三件合计锚定 ≈1.5万、国产高端。
+      核查结论：<strong>1.5万买这 3 件「国产高端」是现实的，但要分清买的是「电商挂牌价」还是「国补到手价」。</strong>
+    </p>
+    <div class="table-wrap" data-reveal>
+      <table>
+        <caption>≈1.5万 推荐组合（北上广 2025–2026 真实可凑）<span class="badge badge--mid">价格随渠道/国补波动</span></caption>
+        <thead><tr><th>件</th><th>推荐型号</th><th>为什么是它</th><th class="num">挂牌价</th><th class="num">国补到手</th></tr></thead>
+        <tbody>
+          <tr><td><strong>烟机</strong></td><td>老板 L1P（或方太 P10.i）</td><td>29m³/min 大风量 + 1300Pa 大静压 + 智能巡航增压，高层共用烟道防倒灌的命门</td><td class="num money">5,499</td><td class="num money money--sub">≈3,999</td></tr>
+          <tr><td><strong>蒸烤</strong></td><td>凯度 SR6028FE22-TD Pro 60L</td><td>直喷蒸汽（非蒸发盘）+ 60L 大腔体 + 四合一，覆盖蒸/烤主力需求</td><td class="num money">4,800</td><td class="num money money--sub">≈4,400</td></tr>
+          <tr><td><strong>微波</strong></td><td>方太 W25800K-E2</td><td>变频平板（解冻加热均匀、边缘不过头）+ 嵌入式前置散热，与橱柜适配成熟</td><td class="num money">2,799</td><td class="num money money--sub">≈2,799</td></tr>
+          <tr class="row-sub"><td>三件机器</td><td colspan="2">不含安装与烟管配件</td><td class="num money">13,098</td><td class="num money">≈11,200</td></tr>
+          <tr><td>+ 安装/配件</td><td colspan="2">烟管 + 独立止逆阀 + 防溅插座 + 基础安装</td><td class="num money">≈1,400</td><td class="num money">≈1,400</td></tr>
+          <tr class="row-total"><td>到手合计</td><td colspan="2">蒸烤一体 + 独立微波 + 旗舰烟机</td><td class="num money">≈14,500</td><td class="num money">≈12,600</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout--honest" data-reveal>
+      <span class="callout__tag">⌖ 诚实结论</span>
+      <p>① 走<strong>北上广以旧换新国补</strong>（普遍 20%、单件封顶约 2,000 元）能把三件压到 ≈1.2万，1.5万有明显余量，可把烟机升到真旗舰；② 想「三件都顶配」不现实——顶配烟机(5,499)+顶配 60L 蒸烤(5,499)+原装嵌入微波(3,000+) 就逼近 1.4万且不含安装；务实做法是<strong>「烟机顶配 + 蒸烤中高端 60L + 微波走方太/美的变频」</strong>；③ 蒸烤一体机需<strong>独立 16A 回路 + 后部散热 ≥35mm</strong>，微波需<strong>独立 16A + 前置散热嵌入专用机</strong>，二者电路在「水电改造」里已留点（详见<a class="inline" href="kitchen-appliances.html">厨电选配篇</a>）。</p>
+    </div>
+  </section>
+
+  <!-- 03 橱柜系统拆解 -->
+  <section class="section" id="cabinet">
+    <div class="section__head"><span class="section__num">03</span>
+      <h2 class="section__title">橱柜系统拆解（占总价 49%）<small>CABINETRY · 加价项必须首版报价就列全</small></h2></div>
+    <p class="lead-p">
+      橱柜是全屋最大一笔，也是<strong>低价引流后补收的重灾区</strong>——塔柜、转角、高低台、见光板、超标配抽屉这些「加价项」累计常占橱柜总价的 20–35%。
+      下面把你这套 L 形橱柜按<strong>延米 + 加价项</strong>摊开，签约时逐条对，谁也藏不了价。
+    </p>
+    <div class="table-wrap" data-reveal>
+      <table>
+        <caption>橱柜系统逐件拆解（国产高端 · 延米法）</caption>
+        <thead><tr><th>构件</th><th>配置</th><th>计量</th><th class="num">中位(元)</th></tr></thead>
+        <tbody>
+          <tr><td>地柜</td><td>柜体多层实木（防潮）+ PET 肤感门板 + 国产高端基础五金</td><td>4 延米 × 3,300</td><td class="num money">13,200</td></tr>
+          <tr><td>吊柜</td><td>柜体 + 门板同系（含上翻/平开）</td><td>3 延米 × 1,900</td><td class="num money">5,700</td></tr>
+          <tr><td>蒸烤塔柜 / 高柜</td><td>2.2m 高，含蒸烤一体机嵌入开孔与散热预留</td><td>1 个</td><td class="num money">4,200</td></tr>
+          <tr><td>L 转角柜 + 加配</td><td>转角柜体 + 见光板/收口 + 灶区超标配抽屉</td><td>1 处 + 若干</td><td class="num money">2,000</td></tr>
+          <tr class="row-sub"><td>橱柜本体小计</td><td colspan="2">不含台面、不含进口五金升级</td><td class="num money">25,100</td></tr>
+          <tr><td>进口五金升级</td><td>Blum 铰链 + Movento 导轨 + 凯斯宝玛转角拉篮（替换基础五金净差价）</td><td>整厨</td><td class="num money">4,500</td></tr>
+          <tr><td>台面（高级石英石）</td><td>赛凯隆/中迅 15mm + 高低台分段加工（水槽95/灶83）</td><td>4 延米 + 分段</td><td class="num money">9,500</td></tr>
+          <tr><td>水槽 + 抽拉龙头</td><td>欧琳/普乐美手工大单槽 + 摩恩抽拉龙头（整套）</td><td>1 套</td><td class="num money">2,150</td></tr>
+          <tr class="row-total"><td>橱柜系统合计</td><td colspan="2">本体 + 五金 + 台面 + 水槽龙头</td><td class="num money">41,250</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="anchors" data-reveal>
+      <div class="anchor"><span class="anchor__icon">📐</span><div class="anchor__body"><strong>锁定一种计价口径横向比 3 家</strong><span>本案塔柜 2.2m 高、有转角和高低台：<b>投影面积法吃高度亏</b>，延米法转角/高低台易藏加价。要求商家给「延米分项明细 + 总价」并索取投影法对照，合同列清转角按哪条线计量。</span></div></div>
+      <div class="anchor"><span class="anchor__icon">🥘</span><div class="anchor__body"><strong>中式爆炒：灶区柜体上 304 不锈钢</strong><span>重油烟高湿环境，灶区/水槽柜用 <b>304 不锈钢柜体</b>（约 2,000–3,000/延米）最务实耐用；其余地柜多层实木、吊柜可用 ENF 级颗粒板控成本。门板首选 PET 肤感（不留指纹、易清洁）。</span></div></div>
+      <div class="anchor"><span class="anchor__icon">🪨</span><div class="anchor__body"><strong>台面选石英石而非岩板</strong><span>中式剁切频繁，<b>岩板硬脆、边角易崩缺</b>；石英石韧性好、可现场打磨近无缝、耐剁切。高低台分两段加工按经验加价 8–15%（拼接/二次开模/对纹损耗）。</span></div></div>
+    </div>
+  </section>
+
+  <!-- 04 设计 监理 软性 -->
+  <section class="section" id="service">
+    <div class="section__head"><span class="section__num">04</span>
+      <h2 class="section__title">设计师 · 监工 · 软性费用<small>SERVICE · 「高级」的隐性成本</small></h2></div>
+    <div class="cards" data-reveal>
+      <article class="card"><div class="card__n">设</div><h4>厨房精细化设计 ¥0–5,000</h4><p>北上广 90% 中高端厨房走<strong>全屋定制品牌随单设计</strong>（量房+平面+3D+橱柜点位，成本已摊进板材，厨房设计费近 0）。<strong>高低台分段、转角非标点位</strong>才值得单付 2,000–5,000 做精细化施工图。中位预留 ¥3,000。</p></article>
+      <article class="card"><div class="card__n">监</div><h4>第三方监理 ¥1,600–4,500</h4><p>8㎡ 单厨按㎡全程监理/按造价百分比都会触发<strong>最低计价</strong>（80㎡ 起或 4% 下限），不经济。首选<strong>按节点验收</strong>：水电+防水+竣工 2–3 次、1,100/次。风险集中在燃气/闭水/收口，正好对应这几个节点。</p></article>
+      <article class="card"><div class="card__n">软</div><h4>软性费用 ¥1,500–3,500</h4><p>装企<strong>项目管理费</strong>（施工部分 8–10%）+ 成品保护（6/㎡）+ 厨房深度开荒保洁。⚠ 管理费/税金以<strong>「不含税、剔除主材」的纯施工+辅料</strong>为基数，签约前确认计费基数，别被按含主材总价重复计。</p></article>
+    </div>
+    <div class="callout callout--warn" data-reveal>
+      <span class="callout__tag">⚠ 监工是这笔钱里最值的</span>
+      <p>中式厨房的钱坑集中在<strong>看不见的隐蔽工程</strong>：燃气移管是否资质方做、闭水是否真做 24h、烟道止逆阀是不是定型产品、大功率回路是否真独立。这些一旦埋错，后期砸墙重来的代价远超 3,000 元监理费。监理报告还能作为<strong>卡付款节点的凭据</strong>——这正是下一节的逻辑。</p>
+    </div>
+  </section>
+
+  <!-- 05 付款节点 -->
+  <section class="section" id="payment">
+    <div class="section__head"><span class="section__num">05</span>
+      <h2 class="section__title">按装修行业标准分阶段付款<small>PAYMENT · 钱永远卡在验收节点后</small></h2></div>
+    <p class="lead-p">「高级」不是先把钱付了求人做好，而是<strong>每一笔款都卡在一个可验收的节点之后</strong>。下面是把这份报价拆成行业通行的付款里程碑——以中位 ¥84,650 为基数（橱柜/厨电多为厂家单独合同，按各自节点付，此处为施工合同口径示意）。</p>
+    <div class="steps" data-reveal>
+      <div class="step"><div><strong>开工订金 · 30%　≈ ¥9,000（施工合同）</strong><span>合同签订、设计点位图与橱柜复尺图确认、进场保护到位后支付。<b>务必先定全部电器型号拿到开孔图，再下橱柜</b>——这条不做，后面全是返工。</span></div></div>
+      <div class="step"><div><strong>隐蔽工程验收款 · 35%</strong><span>水电改造 + 防水完成、<b>闭水试验 ≥20mm/≥24h 合格</b>、燃气由资质方施工并通过气密性复检——监理出具书面验收报告后支付。这是最关键的一道付款锁。</span></div></div>
+      <div class="step"><div><strong>中期款 · 25%</strong><span>瓦工贴砖 + 吊顶完成、橱柜柜体安装到位、台面复尺无误后支付。台面安装、厨电进场前的收尾节点。</span></div></div>
+      <div class="step"><div><strong>竣工尾款 · 5%</strong><span>台面安装、厨电烟灶进场调试、收口验收全部通过、开荒保洁完成后支付。逐项对照本报价的「规格·品牌」列验收。</span></div></div>
+      <div class="step"><div><strong>质保金 · 5%（留 1–2 年）</strong><span>留作质保金，约定 1–2 年内无渗漏/无开裂/五金无失效再付。合同写明质保范围与响应时限。</span></div></div>
+    </div>
+    <div class="callout callout--honest" data-reveal>
+      <span class="callout__tag">⌖ 橱柜与厨电的付款另算</span>
+      <p>定制橱柜（¥25,100 本体 + 五金 + 台面）通常走<strong>厂家独立合同</strong>：下单付 50%、测量复尺/生产前付 40%、安装验收付 10%。厨电三件按电商/经销商各自支付。把<strong>施工合同、橱柜合同、厨电采购</strong>三条线分开管，每条都卡自己的验收节点，比一笔大全包更安全、也更容易追责。</p>
+    </div>
+  </section>
+
+  <!-- 06 价格浮动与避坑 -->
+  <section class="section" id="pitfalls">
+    <div class="section__head"><span class="section__num">06</span>
+      <h2 class="section__title">价格为什么会浮动 · 怎么避坑<small>RISKS · 让区间不向上限跑</small></h2></div>
+    <div class="pitfalls" data-reveal>
+      <div class="pitfall pitfall--head"><div class="pitfall__t">事项</div><div class="pitfall__c">水分 / 风险</div><div class="pitfall__f">正确动作</div></div>
+      <div class="pitfall"><div class="pitfall__t">拆除重复计价</div><div class="pitfall__c">既收「拆旧橱柜延米费」又收「整厨拆旧打包价」</div><div class="pitfall__f">二选一；清运四段责任（装袋/下楼/指定点/外运）写进合同</div></div>
+      <div class="pitfall"><div class="pitfall__t">水电㎡一口价</div><div class="pitfall__c">8㎡×175 概算只算 1,400，密集厨房严重低估</div><div class="pitfall__f">用点位法实测，写明「每点含X米管线，超出补差」</div></div>
+      <div class="pitfall"><div class="pitfall__t">橱柜低价引流</div><div class="pitfall__c">塔柜/转角/高低台/见光板/上翻门后补收 20–35%</div><div class="pitfall__f">首版报价就要求列全所有加价项，锁一种计价口径</div></div>
+      <div class="pitfall"><div class="pitfall__t">厨电挂牌 vs 国补</div><div class="pitfall__c">把国补到手价当日常价承诺，或反之虚报</div><div class="pitfall__f">问清是否走以旧换新国补，两个价都写进对比</div></div>
+      <div class="pitfall"><div class="pitfall__t">管理费/税金基数</div><div class="pitfall__c">按「含主材总价」计管理费和税，重复吃</div><div class="pitfall__f">基数必须是「不含税、剔除主材」的纯施工+辅料</div></div>
+      <div class="pitfall"><div class="pitfall__t">燃气私接</div><div class="pitfall__c">装修队私自改燃气表前管/立管</div><div class="pitfall__f">必须属地燃气公司或资质单位，拒付已取消的开通费</div></div>
+    </div>
+    <div class="callout callout--warn" data-reveal>
+      <span class="callout__tag">⚠ 已有设备：不计价，但必须留对位</span>
+      <p>你已有的<strong>天然气灶（双灶80）、嵌入式洗碗机（60cm/13套）、嵌入式冰箱（60×170）</strong>不在本报价里，但<strong>它们的「留位」是橱柜和水电报价里实打实的成本</strong>：洗碗机要留 16A 独立回路 + 共用水槽上下水、冰箱要留 ≥5cm 散热风道 + 普通插座、灶具要留开孔与燃气接口。<strong>下橱柜前务必先拿到这三台已有设备的型号开孔图</strong>——尺寸对不上就是砸柜返工。这条是整份报价里最容易被忽略、代价最大的一环。</p>
+    </div>
+    <div class="callout callout--honest" data-reveal>
+      <span class="callout__tag">⌖ 区间往哪个方向走</span>
+      <p><strong>压向下限 ¥6.0万</strong>：橱柜用国产高端基础五金（悍高替代 Blum）、台面用中迅石英石、瓷砖墙面用普通哑光大砖、厨电走国补、设计随定制免费、监理只买 2 个节点。<strong>冲向上限 ¥11.7万</strong>：橱柜上爱格板/不锈钢 + 电动上翻、台面进口岩板、墙面局部岩板、全套 Blum、厨电顶配挂牌、请独立设计师。<strong>中位 ¥8.5万</strong> 是国产高端的均衡落点。</p>
+    </div>
+  </section>
+
+  <!-- 07 调研方法与来源 -->
+  <section class="section" id="method">
+    <div class="section__head"><span class="section__num">07</span>
+      <h2 class="section__title">单价怎么来的 · 调研方法与来源<small>METHOD · 28 个 AI agent · 逐项对抗核查</small></h2></div>
+    <p class="lead-p">
+      本报价的每个单价都不是拍脑袋：<strong>14 类分项各派 1 个调研 agent 联网检索北上广 2025–2026 行情</strong>，再各派 1 个<strong>对抗核查 agent</strong> 复核——专门挑「单价虚高 / 计价口径错 / 占位数字 / 重复计费」。28 个 agent、394 次工具调用。核查阶段已把若干中位价向真实成交价回调（如砸墙砖 30→28、拆柜 60→55、整厨打包上限 1800→1700）。
+    </p>
+    <div class="cards" data-reveal>
+      <article class="card"><h4>① 官方/协会硬锚点</h4><p>上海市室内装饰行业协会《2025 人工费参考价》（拆除/垃圾消纳逐项官方价）、北京水电「大功率插座位 240元/位含4平方」、广州市建设工程造价站文件。人工类单价多源精确命中，标 <span class="badge badge--hi">高</span>。</p></article>
+      <article class="card"><h4>② 品牌官方/零售价</h4><p>方太/老板/凯度厨电官网与京东苏宁页、欧派/金牌/志邦橱柜延米价、赛凯隆/中迅石英石、Blum/海蒂诗/悍高五金、德高/东方雨虹防水。价格随渠道/促销/国补波动，标 <span class="badge badge--mid">中</span>。</p></article>
+      <article class="card"><h4>③ 行业平台交叉</h4><p>土巴兔/装信通/房天下/知乎/什么值得买等多源交叉的市场成交行情，用于校准官方指导价与实际成交价的差，剔除单一自媒体口径。</p></article>
+      <article class="card"><h4>④ 对抗核查留痕</h4><p>每类核查 agent 给出「是否可信 + 修正后单价 + 理由」。最关键的产出是揪出<strong>重复计价</strong>（拆除/清运）与<strong>㎡概算低估</strong>（密集厨房水电），这两点已在第 06 节避坑。</p></article>
+    </div>
+    <ul class="sources" data-reveal>
+      <li><span class="q q--gov">官方</span><div><b>上海市室内装饰行业协会《2025 住宅装饰装修人工费参考价》</b> · 北京市住建委建筑垃圾运输处置计价 · 广州市建设工程造价管理站 穗建造价〔2025〕121号 — 拆除/清运/人工费官方锚点</div></li>
+      <li><span class="q q--primary">品牌</span><div><b>方太 / 老板 / 凯度</b> 厨电官网与京东苏宁产品页 · <b>欧派 / 金牌 / 志邦 / 司米</b> 定制橱柜延米价 · <b>赛凯隆 Sinostone / 中迅</b> 石英石 · <b>Blum / Hettich / 悍高 / 凯斯宝玛</b> 五金 · <b>德高 / 东方雨虹</b> 防水 · <b>伟星 / 联塑 / 远东</b> 管线电料</div></li>
+      <li><span class="q q--blog">行业</span><div><b>土巴兔 · 装信通 · 房天下 · 齐家 · 知乎 · 什么值得买</b> — 北上广 2025–2026 装修人工/材料/水电点位/橱柜延米市场成交行情（多源交叉，含厂商口径已打折看）</div></li>
+    </ul>
+  </section>
+
+</main>
+
+<div class="wrap handoff">
+  <a class="handoff__link" href="contract.html">
+    <div><div class="handoff__meta">配套 · 把报价写进合同 →</div><div class="handoff__title">用装修合同篇锁死这份报价</div></div>
+    <span class="handoff__arrow">→</span>
+  </a>
+</div>
+
+<footer class="footer">
+  <p>厨房装修监工指南 · <a href="index.html">施工监工篇</a> ／ <a href="materials-contract.html">选材合同篇</a> ／ <a href="materials-standards.html">材料标准篇</a> ／ <a href="materials-list.html">材料清单篇</a> ／ <a href="contract.html">装修合同篇</a> ／ <a href="kitchen-appliances.html">厨电选配篇</a> ／ <a href="kitchen-budget.html">报价预算篇</a> ／ <a href="kitchen-planner.html">平面规划器</a> ／ <a href="kitchen-3d.html">3D 概念图</a> ／ <a href="kitchen-design.html">设计方案</a></p>
+  <p class="disclaimer">报价基于你 8.06㎡ L 形厨房的实测用量 × 28 个 AI agent 联网调研并对抗核查的北上广 2025–2026 国产高端市场单价。金额为中位估算，实际随品牌、渠道、国补、现场工况浮动；橱柜/厨电以厂家正式报价为准，施工以现场复尺为准。天然气灶/洗碗机/冰箱为你已有设备，未计价、仅留位留电路。本文档为预算参考，不替代正式合同与现场专业判断。</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

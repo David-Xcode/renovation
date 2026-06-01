@@ -7,9 +7,9 @@
 <style>
   /* ---- 原木暖色主题变量（与 2D 模块同款） ---- */
   :root{
-    --paper:#EFE7DA; --stage:#D9CBB4; --panel:#F7F1E6; --wood:#8B5E3C;
-    --wood-d:#6B4528; --cream:#FBF6EC; --accent:#B5793B; --ink:#4A3B2A;
-    --line:#D8C7AC; --danger:#C0492E; --ok:#3C8C5A;
+    --paper:#f3eee3; --stage:#e7ddca; --panel:#f7f2e9; --wood:#1d474d;
+    --wood-d:#12333a; --cream:#fbf8f1; --accent:#c63f29; --ink:#1a1713;
+    --line:#dccfba; --danger:#c0492e; --ok:#3c8c5a;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--paper);}
@@ -17,14 +17,16 @@
 
   /* ---- 顶栏 ---- */
   #topbar{grid-column:1/4;background:linear-gradient(180deg,var(--wood),var(--wood-d));color:var(--cream);
-    display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:6px 16px;min-height:54px;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:5;}
-  #topbar h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.5px;white-space:nowrap;}
+    display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:8px 18px;min-height:56px;
+    box-shadow:0 8px 26px -12px rgba(0,0,0,.5);border-bottom:2px solid var(--accent);z-index:5;}
+  #topbar h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.3px;white-space:nowrap;font-family:"Songti SC","STSong","Fraunces",Georgia,serif;}
   #topbar .sub{font-size:11px;opacity:.7;margin-left:-8px;}
   #topbar .spacer{flex:1;}
-  .tbtn{background:rgba(255,255,255,.12);color:var(--cream);border:1px solid rgba(255,255,255,.22);
-    border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;transition:.15s;}
-  .tbtn:hover{background:rgba(255,255,255,.24);}
-  .tbtn.primary{background:var(--accent);border-color:var(--accent);font-weight:600;}
+  .tbtn{background:rgba(255,255,255,.10);color:var(--cream);border:1px solid rgba(255,255,255,.20);
+    border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer;white-space:nowrap;
+    transition:background .15s,border-color .15s,transform .15s;}
+  .tbtn:hover{background:rgba(255,255,255,.20);border-color:rgba(255,255,255,.42);transform:translateY(-1px);}
+  .tbtn.primary{background:#971f12;border-color:var(--accent);font-weight:600;color:#fff;}
   #paletteSel{display:flex;gap:5px;align-items:center;}
   .swatch{width:22px;height:22px;border-radius:6px;border:2px solid rgba(255,255,255,.5);cursor:pointer;}
   .swatch.on{outline:2px solid var(--cream);outline-offset:1px;}
@@ -87,6 +89,8 @@
   .modal kbd{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:11px;}
   .modal ul{padding-left:18px;line-height:1.9;font-size:13px;}
 </style>
+<!-- 本地内置 three.js（UMD 全局版，file:// 离线可用；勿换 three.module.js，会被 CORS 拦） -->
+<script src="three.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -99,6 +103,8 @@
     <a class="tbtn" href="materials-standards.html" style="text-decoration:none" title="材料/五金/门板标准与选购">🧱 材料标准</a>
     <a class="tbtn" href="materials-list.html" style="text-decoration:none" title="全屋材料清单·规格与标准">🧾 材料清单</a>
     <a class="tbtn" href="contract.html" style="text-decoration:none" title="装修合同成稿">📝 装修合同</a>
+    <a class="tbtn" href="kitchen-appliances.html" style="text-decoration:none" title="嵌入式蒸箱/油烟机/微波炉选配与安装隔热规范">🔌 厨电选配</a>
+    <a class="tbtn" href="kitchen-budget.html" style="text-decoration:none" title="北上广国产高端完整分项报价·中位约8.5万">💰 报价预算</a>
     <a class="tbtn" href="kitchen-planner.html" style="text-decoration:none" title="2D 平面规划器">📐 平面图</a>
     <a class="tbtn" href="kitchen-design.html" style="text-decoration:none" title="定稿设计方案与现场复核清单">📋 设计方案</a>
     <button class="tbtn" id="btnReset">复位视角</button>
@@ -143,7 +149,7 @@
     <li><b>选中</b>：点击 3D 盒子，或点右侧「构件列表」条目</li>
     <li><b>移动</b>：右下角俯视图里拖拽矩形改 X/Y（自动吸附墙体 / 邻柜）</li>
     <li><b>微调</b>：选中后方向键移动 1cm（按住 <kbd>Shift</kbd> 移 5cm）</li>
-    <li><b>尺寸</b>：右侧属性面板改 宽W / 深D / 高H / 离地</li>
+    <li><b>尺寸</b>：右侧属性面板改 宽W / 深D / 高H；吊柜「离地」可手动调（默认贴住房顶）</li>
     <li><b>旋转</b>：选中后按 <kbd>R</kbd> 或属性面板按钮（每次 90°）</li>
     <li><b>删除</b>：选中后按 <kbd>Del</kbd> / <kbd>⌫</kbd></li>
   </ul>
@@ -156,7 +162,7 @@
 <script>
 "use strict";
 // =====================================================================
-// 厨房 3D 概念渲染 —— 纯 Canvas 2D 自写 3D，零外部依赖，可离线 file:// 打开
+// 厨房 3D 概念渲染 —— Three.js (WebGL) 真深度缓冲；依赖本地 three.min.js，可离线 file:// 打开
 // 世界坐标：X=宽(0..bottom)、Y=进深(0..right)、Z=高(0..250)
 // 与 2D 模块（kitchen-planner.html）共用 MODULE_TYPES / PALETTES / DEFAULT_ROOM / footprint
 // =====================================================================
@@ -187,8 +193,9 @@ const TOOL_GROUPS = [
 ];
 
 // 3D 高度默认表（单位 cm；层高=250）。h=构件自身高度，baseZ=底面离地高度，顶面=baseZ+h
+// 注：吊柜(wall)的 baseZ 由 resolveLayout 按「层高-高」实时重算贴顶，此处 180 仅为兜底初值
 const DEFAULT_H     = {base:83, tall:220, tower:220, drawer:83, corner:95, counter:83, island:90, wall:70,  sink:95, cooktop:83, fridge:185, dish:95, oven:60, micro:35, hood:33};
-const DEFAULT_BASEZ = {base:0,  tall:0,   tower:0,    drawer:0,  corner:0,  counter:0,  island:0,  wall:150, sink:0,  cooktop:0,  fridge:0,   dish:0,  oven:85, micro:150, hood:152};
+const DEFAULT_BASEZ = {base:0,  tall:0,   tower:0,    drawer:0,  corner:0,  counter:0,  island:0,  wall:180, sink:0,  cooktop:0,  fridge:0,   dish:0,  oven:85, micro:150, hood:152};
 
 // 原木暖色配色方案（直接复用 2D 的颜色键）
 const PALETTES = [
@@ -205,11 +212,13 @@ const PALETTES = [
 
 // 房间默认参数（用户实测 · L 形）。注意：本模块层高一律 250
 const CEILING = 250;
-const DEFAULT_ROOM = {bottom:218, right:385, flueW:67, flueD:49, doorW:240, doorFromBottom:80, winW:80, winFromLeft:36, ceiling:CEILING};
+const DEFAULT_ROOM = {bottom:218, right:385, flueW:67, flueD:49, doorW:240, doorFromBottom:80, winW:80, winFromLeft:0, ceiling:CEILING};
 const ROOM_FIELDS = [
   ['bottom','底墙宽'],['right','右墙高(全进深)'],['flueW','烟道宽'],['flueD','烟道深'],
   ['doorW','门洞宽'],['doorFromBottom','门距底墙'],['winW','窗宽'],['winFromLeft','窗距顶墙左端'],['ceiling','层高'],
 ];
+// 偏移类字段：值是「距某墙的距离」，0 合法(=贴墙)；其余为尺寸字段，必须 >0。区分二者用于参数校验
+const OFFSET_FIELDS = new Set(['winFromLeft','doorFromBottom']);
 
 // ===================== 房间几何（抄自 2D buildRoom） =====================
 function buildRoom(p){
@@ -223,55 +232,72 @@ function buildRoom(p){
           xLines:[0,p.flueW,p.bottom], yLines:[0,L,p.right]};
 }
 
-// ===================== 向量 / 标量工具（手写，无库） =====================
-const V = {
-  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
-  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
-  scale:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],
-  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
-  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
-  len:a=>Math.hypot(a[0],a[1],a[2]),
-  norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1; return [a[0]/l,a[1]/l,a[2]/l];},
-};
+// 注：原手写向量库 V 已移除——几何计算改由 Three.js 承担（向量/矩阵/投影/深度缓冲均内建）。
 
 // ===================== 状态 =====================
-const LS3 = 'kitchen-3d-v5';      // 独立 key，不污染 2D；v5=用户定稿布局 + 穿模/缺口修正 + 台面统一90(沉灶83)，旧数据自动让位
+const LS3 = 'kitchen-3d-v7';      // 独立 key，不污染 2D；v7=窗户改贴烟囱(winFromLeft=0)，旧 v6 工作存档与默认槽一并让位，下次开页用新默认
 const LS3_DEF = LS3 + '-default'; // 用户「设为默认」存的槽：恢复默认 / 换设备首开都优先用它，无此槽才回退写死的 starterModules()
 const LS2 = 'kitchen-planner-v1'; // 仅用于「从 2D 衔接」时按钮提示，不写
 let state = null, room = null;
 
 // 球面相机：az 方位角 / el 仰角（弧度）/ dist 距离 / target 看向点
 const cam = {az: Math.PI*0.30, el: Math.PI*0.32, dist: 720, target:[0,0,90]};
-// 投影参数（CSS 像素口径）。由 render() / hitTest3D() 在使用 project() 前同步为主画布实时口径，
-// 故初值仅为占位；drawScene 导出时会临时改写，但不影响命中路径（命中前会重置）。
-let dpr = 1, cssW = 800, cssH = 600, focal = 600;
+// 设备像素比（供 renderer.setPixelRatio 用）
+let dpr = 1;
 
 function uid(){ return 'm'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36); }
 
-// 起始布局 = 定稿设计方案（8m² L 形）。台面统一90、沉灶留83；底墙连续无缝、顶墙3柜填满151cm、吊柜让开转角与烟机——已消穿模
-// mk 接收显式 w/d/h/baseZ：高度要逐件覆盖类型默认，不能只取默认
+// 起始布局 = 定稿设计方案（8m² L 形）：只声明「意图」（类型 / 位置 / 朝向 / 尺寸 / 自身高度），
+// baseZ（离地）一律交给 resolveLayout 规则引擎算——不再人肉调「避穿模」高度。
 function starterModules(){
-  const mk = (type,x,y,rot,w,d,h,baseZ)=>({id:uid(), type, x, y, rot, w, d, h, baseZ});
+  const mk = (type,x,y,rot,w,d,h)=>({id:uid(), type, x, y, rot, w, d, h, baseZ:0});
   return [
     // —— 左墙（自下而上）= 转角 → 水槽 → 洗碗机 → 灶 → 备餐；台面统一90，沉灶低7cm ——
-    mk('corner', 30, 30, 90, 60,60, 90,  0),   // 左下转角柜
-    mk('sink',   30,110, 90,100,60, 90,  0),   // 水槽柜100：大单盆
-    mk('dish',   30,182.5,90,45,60, 90,  0),   // 洗碗机45嵌入
-    mk('cooktop',30,250, 90, 90,60, 83,  0),   // 双头电磁灶90：沉灶低7cm
-    mk('base',   30,315, 90, 40,60, 90,  0),   // 灶旁备餐落台40
+    mk('corner', 30, 30, 90, 60,60, 90),   // 左下转角柜
+    mk('sink',   30,110, 90,100,60, 90),   // 水槽柜100：大单盆
+    mk('dish',   30,182.5,90,45,60, 90),   // 洗碗机45嵌入
+    mk('cooktop',30,250, 90, 90,60, 83),   // 双头电磁灶90：沉灶低7cm
+    mk('base',   30,315, 90, 40,60, 90),   // 灶旁备餐落台40
     // —— 底墙 = 转角 ▸ 塔柜 ▸ 冰箱（连续无缝：左缘 60→145→215）——
-    mk('tower', 102.5,30, 0, 85,60,250,  0),   // 微蒸烤塔柜：贴转角(左缘60)
-    mk('fridge',180,  35, 0, 70,70,185,  0),   // 嵌入冰箱70：贴塔柜(左缘145)
+    mk('tower', 102.5,30, 0, 85,60,250),   // 微蒸烤塔柜：贴转角(左缘60)
+    mk('fridge',180,  35, 0, 70,70,185),   // 嵌入冰箱70：贴塔柜(左缘145)
     // —— 顶墙窗下 = 3 连看景备餐台（各50，填满 151cm 墙 x67–217）——
-    mk('base',   92,360,180, 50,50, 90,  0),   // 窗下备餐台①
-    mk('base',  142,360,180, 50,50, 90,  0),   // 窗下备餐台②
-    mk('base',  192,360,180, 50,50, 90,  0),   // 窗右备餐台③
-    // —— 吊装层 ——
-    mk('hood',   25,250, 90, 90,50, 33,152),   // 油烟机：灶上方
-    mk('wall',   17.5,132.5,90,145,35, 70,180),// 左墙吊柜：只盖水槽+洗碗机段(y60–205)，让开转角与烟机
-    mk('wall',   30, 30, 0, 60,60, 70,180),    // 转角上方吊柜（与转角柜同宽60）
-    mk('wall',  180, 30, 0, 70,60, 65,185),    // 冰箱顶吊柜：坐冰箱顶(z185)避穿模，顶对齐250
+    mk('base',   92,360,180, 50,50, 90),   // 窗下备餐台①
+    mk('base',  142,360,180, 50,50, 90),   // 窗下备餐台②
+    mk('base',  192,360,180, 50,50, 90),   // 窗右备餐台③
+    // —— 吊装层（油烟机自动挂高；吊柜默认贴住房顶，离地可在属性面板手动调）——
+    mk('hood',   25,250, 90, 90,50, 33),   // 油烟机：灶上方
+    mk('wall',   17.5,132.5,90,145,35, 70),// 左墙吊柜①：水槽+洗碗机段
+    mk('wall',   17.5,250, 90, 90,35, 65), // 左墙吊柜②：油烟机上方
+    mk('wall',   17.5,315, 90, 40,35, 70), // 左墙吊柜③：左备餐上方
+    mk('wall',   30, 30, 0, 60,60, 70),    // 转角上方吊柜
+    mk('wall',  180, 30, 0, 70,60, 65),    // 冰箱顶吊柜
   ];
+}
+
+// ===================== 规则引擎：自动算 baseZ（任意布局都不穿模的本体） =====================
+// 挂装高度规则（cm）：嵌入电器底高 / 固定电器标准挂高，替代写死的 baseZ。
+const MOUNT = { micro:150, hood:152, oven:85 };
+// 三遍定位：
+//   1) 落地件 → 固定底高（多数 0，oven 嵌入 85）
+//   2) 固定电器（油烟机 / 微波炉）→ 标准挂高，脚下压着更高落地件则抬到其顶
+//   3) 吊柜 → 默认顶面贴住房顶（baseZ = 层高 - 自身高度）；用户手动调过离地(manualZ)则尊重其值
+function resolveLayout(mods){
+  const stackOn = (m, alsoAppliances)=>{
+    const fp = footprint(m);
+    let z = MOUNT[m.type] ?? (MODULE_TYPES[m.type].layer==='upper' ? 150 : 0);
+    for(const o of mods){
+      if(o.id===m.id) continue;
+      const ol = MODULE_TYPES[o.type].layer;
+      const consider = ol==='floor' || (alsoAppliances && (o.type==='hood' || o.type==='micro'));
+      if(consider && rectsOverlap(fp, footprint(o))) z = Math.max(z, o.baseZ + o.h);
+    }
+    m.baseZ = z; clampHeight(m);
+  };
+  for(const m of mods) if(MODULE_TYPES[m.type].layer==='floor'){ m.baseZ = MOUNT[m.type] ?? 0; clampHeight(m); }
+  for(const m of mods) if(m.type==='hood' || m.type==='micro') stackOn(m, false);
+  // 吊柜：默认顶面贴住房顶；一旦手动设过离地(manualZ)就不再自动覆盖，只夹紧到合法区间
+  for(const m of mods) if(m.type==='wall'){ if(!m.manualZ) m.baseZ = CEILING - m.h; clampHeight(m); }
 }
 // 优先返回用户「设为默认」保存的布局；没有该槽才回退到写死的开局布局
 function defaultState(){ return readStateFrom(LS3_DEF) || {paletteIndex:0, roomParams:{...DEFAULT_ROOM}, modules:starterModules(), selectedId:null}; }
@@ -286,7 +312,9 @@ function sanitizeRoomParams(obj){
   if(obj && typeof obj==='object'){
     for(const [k] of ROOM_FIELDS){
       const v=+obj[k];
-      if(!isNaN(v) && v>0) out[k]=Math.min(v, (k==='bottom'||k==='right')?1500:1200);
+      // 偏移字段允许 0(贴墙)，尺寸字段仍要求 >0
+      const minOK = OFFSET_FIELDS.has(k) ? v>=0 : v>0;
+      if(!isNaN(v) && minOK) out[k]=Math.min(v, (k==='bottom'||k==='right')?1500:1200);
     }
   }
   out.ceiling = CEILING;
@@ -304,6 +332,8 @@ function enrich(raw){
   const dh = DEFAULT_H[m.type] ?? 85, dz = DEFAULT_BASEZ[m.type] ?? 0;
   m.h     = (+raw.h > 0) ? +raw.h : dh;
   m.baseZ = (raw.baseZ != null && +raw.baseZ >= 0) ? +raw.baseZ : dz;
+  // 透传「手动调过离地」脏标记（仅吊柜用到）：normalizeModule 会丢弃未知字段，需在此恢复
+  m.manualZ = !!raw.manualZ;
   clampHeight(m);
   return m;
 }
@@ -330,7 +360,8 @@ function persist(){
 }
 // 任何改动后统一调用：存盘 + 重画 + 刷新面板
 function commit(){ persist(); render(); updateInspector(); }
-// 仅重画（拖拽 / 实时改尺寸时用，避免重建面板抢焦点）
+// 几何 / 位置变更后重画 3D + 俯视小图（拖拽 / 实时改尺寸用）；不重建右侧属性面板，避免抢输入焦点。
+// 注意：内部走全量 render()（含 resolveLayout/重建网格），并非只刷相机——相机轨道请用 renderScene()。
 function renderOnly(){ render(); renderMini(); }
 
 // ===================== 几何辅助（抄自 2D） =====================
@@ -344,56 +375,9 @@ function rectsOverlap(a,b){ return a.minX<b.maxX-0.5 && a.maxX>b.minX+0.5 && a.m
 const floorMods = ()=> state.modules.filter(m=>MODULE_TYPES[m.type].layer==='floor');
 const clamp = (v,lo,hi)=> Math.max(lo, Math.min(hi, v));
 
-// ===================== 相机 / 投影 =====================
-function camEye(){
-  const ce=Math.cos(cam.el), se=Math.sin(cam.el), ca=Math.cos(cam.az), sa=Math.sin(cam.az);
-  // Z 为高度轴：仰角分量加在 Z 上，worldUp=+Z
-  return V.add(cam.target, [cam.dist*ce*ca, cam.dist*ce*sa, cam.dist*se]);
-}
-// 构造视图基（右手，world up=+Z），返回 toView：世界点 → [vx 右, vy 上, vz 前]
-function makeView(){
-  const eye = camEye();
-  const fwd = V.norm(V.sub(cam.target, eye));
-  const worldUp = [0,0,1];
-  let right = V.cross(fwd, worldUp);
-  if(V.len(right) < 1e-6) right = [1,0,0];      // 近俯视退化保护
-  right = V.norm(right);
-  const up = V.norm(V.cross(right, fwd));
-  return {eye, fwd, right, up,
-    toView:(p)=>{ const d=V.sub(p,eye); return [V.dot(d,right), V.dot(d,up), V.dot(d,fwd)]; }};
-}
-const FOV = 42*Math.PI/180;
-// 视图坐标 → 屏幕坐标（CSS 像素）；返回 [sx, sy, depth]，depth=vz 供排序；在相机后方返回 null
-function project(vp){
-  if(vp[2] <= 0.05) return null;
-  const f = focal;
-  return [cssW/2 + f*vp[0]/vp[2], cssH/2 - f*vp[1]/vp[2], vp[2]];
-}
-
-// ===================== 盒子：8 顶点 + 6 面 =====================
-function boxCorners(m){
-  const fp = footprint(m);
-  const z0 = m.baseZ, z1 = m.baseZ + m.h;
-  return [[fp.minX,fp.minY,z0],[fp.maxX,fp.minY,z0],[fp.maxX,fp.maxY,z0],[fp.minX,fp.maxY,z0],
-          [fp.minX,fp.minY,z1],[fp.maxX,fp.minY,z1],[fp.maxX,fp.maxY,z1],[fp.minX,fp.maxY,z1]];
-}
-// 6 面：顶点索引（CCW 看向外）+ 朝外法线 + 类型（决定明暗）
-const BOX_FACES = [
-  {idx:[4,5,6,7], n:[0,0, 1], kind:'top'},
-  {idx:[0,3,2,1], n:[0,0,-1], kind:'bottom'},
-  {idx:[0,1,5,4], n:[0,-1,0], kind:'side'},   // -Y（朝底墙，常为正面）
-  {idx:[3,7,6,2], n:[0, 1,0], kind:'side'},   // +Y
-  {idx:[0,4,7,3], n:[-1,0,0], kind:'side'},   // -X
-  {idx:[1,2,6,5], n:[ 1,0,0], kind:'side'},   // +X
-];
-
-// ===================== 光照 / 取色 =====================
-const LIGHT = V.norm([-0.4,-0.5,-0.9]);  // 斜上方来光
-const AMBIENT = 0.5;
-function faceShade(n){ // 世界法线 → [0..1] 亮度系数；顶面最亮、侧面渐暗
-  const lambert = Math.max(0, V.dot(n, V.scale(LIGHT,-1)));
-  return AMBIENT + (1-AMBIENT)*lambert;
-}
+// ===================== 取色 / 光照常量（供贴图绘制与 Three 灯光复用） =====================
+const FOV = 42;                        // 透视相机竖直视场角（度），与原投影口径一致
+const LIGHT_DIR = [-0.4,-0.5,-0.9];    // 来光方向（世界）：斜上方；Three 平行光置于其反向
 // 解析 '#rrggbb' → [r,g,b]
 function hex2rgb(hex){ return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]; }
 // rgb 数组 × 系数 → css 字符串
@@ -432,49 +416,7 @@ const DETAILS = {
   "wall": {"decals":{"front":[{"kind":"rect","x":0.04,"y":0.13,"w":0.44,"h":0.83,"r":0.02,"stroke":"_dark","lw":1.2},{"kind":"rect","x":0.52,"y":0.13,"w":0.44,"h":0.83,"r":0.02,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.5,"y1":0.13,"x2":0.5,"y2":0.96,"stroke":"_dark","lw":1.5},{"kind":"line","x1":0.1,"y1":0.08,"x2":0.9,"y2":0.08,"stroke":"_metal","lw":3}],"bottom":[{"kind":"rect","x":0.03,"y":0.03,"w":0.94,"h":0.94,"r":0.02,"stroke":"_dark","lw":1.2},{"kind":"line","x1":0.12,"y1":0.85,"x2":0.88,"y2":0.85,"stroke":"_hi","lw":2,"alpha":0.8}]}}
 };
 
-// 世界法线 → 离散键
-function nkey(n){
-  if(n[2]> 0.5) return 'z+'; if(n[2]<-0.5) return 'z-';
-  if(n[0]> 0.5) return 'x+'; if(n[0]<-0.5) return 'x-';
-  if(n[1]> 0.5) return 'y+'; return 'y-';
-}
-// 平面向量绕 +Z 顺时针转 90°×steps(朝向约定:rot0 正面=+Y, rot90=+X, rot180=-Y, rot270=-X)
-function rotVec2(x,y,steps){ steps=((steps%4)+4)%4; for(let i=0;i<steps;i++){ const t=x; x=y; y=-t; } return [x,y]; }
-// rot → {世界面键: 局部角色}。约定 rot0: front=+Y, back=-Y, right=+X, left=-X
-function faceRoleMap(rot){
-  const steps=Math.round(rot/90), map={'z+':'top','z-':'bottom'};
-  const base={front:[0,1], back:[0,-1], right:[1,0], left:[-1,0]};
-  for(const role in base){ const v=rotVec2(base[role][0],base[role][1],steps); map[nkey([v[0],v[1],0])]=role; }
-  return map;
-}
-// 把一张世界面的 4 顶点索引规整为 [LB,RB,RT,LT](side 面 v 轴朝 +Z;top/bottom 的 v 轴朝构件 front)
-function faceQuad(corners, face, frontSteps){
-  const ids=face.idx; let uAxis, vAxis;
-  if(face.kind==='side'){ vAxis=[0,0,1]; uAxis=V.norm(V.cross(face.n,vAxis)); }
-  else { const f=rotVec2(0,1,frontSteps); vAxis=[f[0],f[1],0]; uAxis=[f[1],-f[0],0];
-         if(face.kind==='bottom'){ vAxis=[-f[0],-f[1],0]; } }
-  const pu=ids.map(i=>V.dot(corners[i],uAxis)), pv=ids.map(i=>V.dot(corners[i],vAxis));
-  const uMin=Math.min(...pu),uMax=Math.max(...pu),vMin=Math.min(...pv),vMax=Math.max(...pv);
-  const pick=(ut,vt)=>{ let best=ids[0],bd=Infinity;
-    for(let k=0;k<ids.length;k++){ const d=Math.abs(pu[k]-ut)+Math.abs(pv[k]-vt); if(d<bd){bd=d;best=ids[k];} } return best; };
-  return [pick(uMin,vMin), pick(uMax,vMin), pick(uMax,vMax), pick(uMin,vMax)];
-}
-// 面物理宽高比(正圆矫正用)
-function faceAspect(corners,q){ const w=V.len(V.sub(corners[q[1]],corners[q[0]])), h=V.len(V.sub(corners[q[3]],corners[q[0]])); return h>1e-6?w/h:1; }
-// 单位面坐标 (u,v)∈[0,1] → 屏幕(双线性);S=[LB,RB,RT,LT],v=0 下、v=1 上
-function uvMapper(S){ return (u,v)=>{
-  const bx=S[0][0]+(S[1][0]-S[0][0])*u, by=S[0][1]+(S[1][1]-S[0][1])*u;
-  const tx=S[3][0]+(S[2][0]-S[3][0])*u, ty=S[3][1]+(S[2][1]-S[3][1])*u;
-  return [bx+(tx-bx)*v, by+(ty-by)*v]; }; }
-// 掠射/极小面降级:四边形退化成窄条或太小 → 跳过 decal(只留素面)
-function degenerate(S){
-  const d=(a,b)=>Math.hypot(S[a][0]-S[b][0],S[a][1]-S[b][1]);
-  const bo=d(0,1),to=d(2,3),le=d(0,3),ri=d(1,2);
-  const wR=Math.max(bo,to)/Math.max(1,Math.min(bo,to)), hR=Math.max(le,ri)/Math.max(1,Math.min(le,ri));
-  const area=Math.abs((S[1][0]-S[0][0])*(S[3][1]-S[0][1])-(S[3][0]-S[0][0])*(S[1][1]-S[0][1]));
-  return wR>5 || hR>5 || area<280;
-}
-// 颜色键 → css。特殊键派生自父基色(禁硬编码 hex,换配色不失真)
+// 颜色键 → css。特殊键派生自父基色（禁硬编码 hex，换配色不失真）。贴图统一 shade=1（不预打光，交给 Three 灯光）
 function resolveColor(key, baseC, P, shade){
   switch(key){
     case '_dark':   return shadeRGB(baseC, shade*0.45);
@@ -487,7 +429,7 @@ function resolveColor(key, baseC, P, shade){
     default:        return P[key] ? shadeRGB(hex2rgb(P[key]), shade) : shadeRGB(baseC, shade);
   }
 }
-// 颜色键 → rgb 数组(子体量基色用)
+// 颜色键 → rgb 数组（子体量基色用）
 function colorKeyRGB(key, m, P){
   switch(key){
     case '_metal': return [200,205,211];
@@ -498,7 +440,7 @@ function colorKeyRGB(key, m, P){
     default: return P[key] ? hex2rgb(P[key]) : baseColorOf(m,P);
   }
 }
-// 单位坐标圆角矩形 → 点串
+// 单位坐标圆角矩形 → 点串（u,v∈[0,1]）
 function roundRectUV(x,y,w,h,r){
   r=Math.min(r||0, Math.abs(w)/2, Math.abs(h)/2);
   if(r<=0.0001) return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
@@ -507,288 +449,235 @@ function roundRectUV(x,y,w,h,r){
   arc(x+w-r,y+h-r,0,Math.PI*0.5); arc(x+r,y+h-r,Math.PI*0.5,Math.PI);
   return pts;
 }
-// decal 形状列表 → 屏幕折线 + 样式
-function compileShapes(shapes, map, aspect, baseC, P, shade){
-  const out=[], col=k=> k==null?null:resolveColor(k, baseC, P, shade);
+
+// ===================== decal → 面贴图（复用 DETAILS 数据，画进离屏 canvas 当纹理） =====================
+const TEX_PXCM = 4, TEX_MAX = 512;       // 贴图分辨率（像素/cm）+ 单边像素上限
+// 把一面的 decal 形状画进 2D ctx。u→右、v→上；canvas y 向下，故 v=0 落在画布底部。
+function drawShapesToCanvas(cx, cw, ch, shapes, baseC, P){
+  const U=(u)=>u*cw, Vy=(v)=>(1-v)*ch;
+  const col=k=> k==null?null:resolveColor(k, baseC, P, 1);
+  const poly=(pts,closed)=>{ cx.beginPath(); pts.forEach((p,i)=> i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); if(closed) cx.closePath(); };
   for(const s of shapes){
+    cx.globalAlpha = s.alpha!=null ? s.alpha : 1;
     if(s.kind==='rect'){
-      out.push({pts:roundRectUV(s.x,s.y,s.w,s.h,s.r).map(uv=>map(uv[0],uv[1])), closed:true,
-                fill:col(s.fill), stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+      poly(roundRectUV(s.x,s.y,s.w,s.h,s.r).map(p=>[U(p[0]),Vy(p[1])]), true);
+      if(s.fill){ cx.fillStyle=col(s.fill); cx.fill(); }
+      if(s.stroke){ cx.strokeStyle=col(s.stroke); cx.lineWidth=s.lw||1; cx.stroke(); }
     } else if(s.kind==='circle'){
-      const ry=s.ry!=null?s.ry:s.rx*aspect, pts=[];
-      for(let k=0;k<24;k++){ const a=k/24*2*Math.PI; pts.push(map(s.cx+s.rx*Math.cos(a), s.cy+ry*Math.sin(a))); }
-      out.push({pts, closed:true, fill:col(s.fill), stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+      const rx=s.rx*cw, ry=(s.ry!=null ? s.ry*ch : s.rx*cw);   // 以 cw 为基准 → 视觉正圆
+      cx.beginPath(); cx.ellipse(U(s.cx), Vy(s.cy), rx, ry, 0, 0, Math.PI*2);
+      if(s.fill){ cx.fillStyle=col(s.fill); cx.fill(); }
+      if(s.stroke){ cx.strokeStyle=col(s.stroke); cx.lineWidth=s.lw||1; cx.stroke(); }
     } else if(s.kind==='line'){
-      out.push({pts:[map(s.x1,s.y1),map(s.x2,s.y2)], closed:false, stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+      poly([[U(s.x1),Vy(s.y1)],[U(s.x2),Vy(s.y2)]], false);
+      cx.strokeStyle=col(s.stroke); cx.lineWidth=s.lw||1; cx.stroke();
     } else if(s.kind==='lines'){
-      out.push({pts:s.pts.map(uv=>map(uv[0],uv[1])), closed:!!s.closed, fill:col(s.fill), stroke:col(s.stroke), lw:s.lw||1, alpha:s.alpha});
+      poly(s.pts.map(p=>[U(p[0]),Vy(p[1])]), !!s.closed);
+      if(s.fill){ cx.fillStyle=col(s.fill); cx.fill(); }
+      if(s.stroke){ cx.strokeStyle=col(s.stroke); cx.lineWidth=s.lw||1; cx.stroke(); }
     }
+    cx.globalAlpha = 1;
   }
-  return out;
 }
-// 子体量(局部 rel 盒)→ 世界盒;type='_sub' 防止递归触发细节
-function subToModule(m, sv){
-  const r=sv.rel, steps=Math.round(m.rot/90);
-  const o=rotVec2(r.dx||0, r.dy||0, steps);
-  const baseZ=m.baseZ + (m.h/2 + (r.dz||0) - r.h/2);
-  return {type:'_sub', x:m.x+o[0], y:m.y+o[1], w:r.w, d:r.d, rot:m.rot, baseZ:Math.max(0,baseZ), h:r.h};
+// 生成某类型某面的 CanvasTexture（按 类型|面|配色|宽|高 缓存复用，换配色 / 改尺寸才重建）；无 decal 返回 null
+const _texCache = new Map();
+let _texCacheUsed = null;                 // reconcileMeshes 期间记录本轮用到的纹理键，轮末扫除未用项（约束缓存大小）
+function makeFaceTexture(type, role, faceW, faceH, baseC, P){
+  const shapes = (DETAILS[type] && DETAILS[type].decals) ? DETAILS[type].decals[role] : null;
+  if(!shapes || !shapes.length) return null;
+  const key = `${type}|${role}|${state.paletteIndex}|${Math.round(faceW)}|${Math.round(faceH)}`;
+  if(_texCacheUsed) _texCacheUsed.add(key);          // 标记本轮用到，供 reconcileMeshes 扫除旧配色/旧尺寸的废纹理
+  if(_texCache.has(key)) return _texCache.get(key);
+  const cw = Math.max(8, Math.min(TEX_MAX, Math.round(faceW*TEX_PXCM)));
+  const ch = Math.max(8, Math.min(TEX_MAX, Math.round(faceH*TEX_PXCM)));
+  const cv = document.createElement('canvas'); cv.width=cw; cv.height=ch;
+  const cx = cv.getContext('2d');
+  cx.fillStyle = shadeRGB(baseC, 1); cx.fillRect(0,0,cw,ch);   // 面底色（与盒同色），decal 叠其上
+  cx.lineJoin='round'; cx.lineCap='round';
+  drawShapesToCanvas(cx, cw, ch, shapes, baseC, P);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.anisotropy = 4;
+  _texCache.set(key, tex);
+  return tex;
 }
 
-// ===================== 渲染（画家算法，远→近） =====================
+// ===================== 渲染（Three.js / WebGL 真深度缓冲） =====================
 const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
 const stage = document.getElementById('stage');
+
+let renderer, scene, camera, raycaster, roomGroup, modulesGroup;
+const meshes = new Map();             // id -> THREE.Group（每模块一个，原子单位）
+
+// rgb[0..255] → THREE 颜色整数；css '#rrggbb' → THREE 颜色整数
+function rgbInt(rgb){ const c=v=>Math.max(0,Math.min(255,Math.round(v))); return (c(rgb[0])<<16)|(c(rgb[1])<<8)|c(rgb[2]); }
+function hexInt(hex){ return rgbInt(hex2rgb(hex)); }
+
+function initThree(){
+  THREE.ColorManagement.enabled = false;        // 颜色直通，匹配原平涂暖色观感
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true, preserveDrawingBuffer:true});
+  renderer.setClearColor(0x000000, 0);          // 透明：露出 #stage 的 CSS 渐变背景
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(FOV, 1, 1, 8000);
+  raycaster = new THREE.Raycaster();
+  scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.62);
+  dir.position.set(-LIGHT_DIR[0], -LIGHT_DIR[1], -LIGHT_DIR[2]);   // 光从 LIGHT_DIR 反向射来
+  scene.add(dir);
+  roomGroup = new THREE.Group(); scene.add(roomGroup);
+  modulesGroup = new THREE.Group(); scene.add(modulesGroup);
+}
+
+// 球面相机 az/el/dist/target（沿用原手写轨道）→ Three 透视相机
+function syncCamera(){
+  const ce=Math.cos(cam.el), se=Math.sin(cam.el), ca=Math.cos(cam.az), sa=Math.sin(cam.az);
+  camera.position.set(cam.target[0]+cam.dist*ce*ca, cam.target[1]+cam.dist*ce*sa, cam.target[2]+cam.dist*se);
+  camera.up.set(0,0,1);                          // 世界 Z 为上
+  camera.lookAt(cam.target[0], cam.target[1], cam.target[2]);
+}
+
+// BoxGeometry 材质槽顺序 [+X,-X,+Y,-Y,+Z,-Z] → decal 角色键。
+// 约定 rot0：front=+Y / back=-Y / right=+X / left=-X；group.rotation.z=-rot 复刻原顺时针朝向（与 footprint 一致）。
+const FACE_SLOTS = ['right','left','front','back','top','bottom'];
+const FACE_DIMS = {                              // 各面贴图物理宽×高（cm）：决定分辨率与正圆
+  right:m=>[m.d,m.h], left:m=>[m.d,m.h], front:m=>[m.w,m.h], back:m=>[m.w,m.h],
+  top:m=>[m.w,m.d], bottom:m=>[m.w,m.d],
+};
+
+// 原子构造：一个模块 → 一个 Group（盒体 6 面材质 + 子体量 + 棱线轮廓）
+function buildModuleGroup(m, P, sel, warn){
+  const g = new THREE.Group(); g.userData.id = m.id;
+  const base = baseColorOf(m, P);
+  const mats = FACE_SLOTS.map(role=>{
+    const [fw,fh] = FACE_DIMS[role](m);
+    const tex = DECAL_ON ? makeFaceTexture(m.type, role, fw, fh, base, P) : null;
+    return tex ? new THREE.MeshLambertMaterial({map:tex}) : new THREE.MeshLambertMaterial({color:rgbInt(base)});
+  });
+  const geo = new THREE.BoxGeometry(m.w, m.d, m.h);
+  g.add(new THREE.Mesh(geo, mats));
+  // 子体量（烟道筒 / 龙头 / 拉手 / 台面出挑等）：子盒，相对盒心放置，随 group 一起旋转
+  const det = SUBVOL_ON ? DETAILS[m.type] : null;
+  if(det && det.subs) for(const sv of det.subs){
+    const r = sv.rel;
+    const sm = new THREE.Mesh(new THREE.BoxGeometry(r.w, r.d, r.h),
+                 new THREE.MeshLambertMaterial({color:rgbInt(colorKeyRGB(sv.colorKey, m, P))}));
+    sm.position.set(r.dx||0, r.dy||0, r.dz||0);   // dz = 相对盒心的高度偏移
+    g.add(sm);
+  }
+  // 棱线轮廓（复刻原「每面描边」的清晰盒感）：选中→accent，冲突→红，否则深一档基色
+  const edgeInt = warn ? 0xC0492E : (sel ? hexInt(P.accent) : rgbInt(base.map(v=>v*0.55)));
+  g.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({color:edgeInt})));
+  g.rotation.z = -m.rot * Math.PI/180;
+  g.position.set(m.x, m.y, m.baseZ + m.h/2);
+  return g;
+}
+
+// 释放 Group 的几何/材质（贴图走 _texCache 复用，不在此 dispose）
+function disposeGroup(g){
+  g.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    if(o.material){ const a=Array.isArray(o.material)?o.material:[o.material]; a.forEach(mt=>mt.dispose()); }
+  });
+}
+function removeModuleGroup(id){ const g=meshes.get(id); if(g){ modulesGroup.remove(g); disposeGroup(g); meshes.delete(id); } }
+
+// 对账：按 state.modules 重建模块 Group（增/改全建，删则移除）。~16 个无压力，贴图走缓存
+function reconcileMeshes(P){
+  _texCacheUsed = new Set();
+  const warnIds = computeWarnings().ids, seen = new Set();
+  for(const m of state.modules){
+    seen.add(m.id);
+    removeModuleGroup(m.id);
+    const g = buildModuleGroup(m, P, m.id===state.selectedId, warnIds.has(m.id));
+    meshes.set(m.id, g); modulesGroup.add(g);
+  }
+  for(const id of [...meshes.keys()]) if(!seen.has(id)) removeModuleGroup(id);
+  // 扫除本轮未用到的贴图（换配色 / 改尺寸留下的旧纹理）：把缓存约束在当前布局所需之内
+  for(const [k,t] of _texCache){ if(!_texCacheUsed.has(k)){ t.dispose(); _texCache.delete(k); } }
+  _texCacheUsed = null;
+}
+
+// 房间静物：地板（L 形）+ 网格 + 三面墙（单面朝内→近墙自动背剔）+ 窗 + 烟道柱
+function rebuildRoom(P){
+  for(const c of [...roomGroup.children]){ roomGroup.remove(c); disposeGroup(c); }
+  const p = room.params, B = room.bounds.maxX, R = p.right, L = room.L, fw = p.flueW, CH = CEILING;
+  // 地板（L 形多边形，z=0 水平面）
+  const shape = new THREE.Shape();
+  room.poly.forEach((pt,i)=> i?shape.lineTo(pt[0],pt[1]):shape.moveTo(pt[0],pt[1]));
+  roomGroup.add(new THREE.Mesh(new THREE.ShapeGeometry(shape),
+                 new THREE.MeshLambertMaterial({color:hexInt(P.floor), side:THREE.DoubleSide})));
+  addFloorGrid(P, B, R);
+  // 三面墙 + 右墙（门洞断两段）：单面，法线朝房间内 → 相机在外侧时近墙自动背剔（看进室内）
+  const wallInt = hexInt(P.wall);
+  addWall(B/2, 0, CH/2, B, CH, [0,1,0], wallInt);               // 底墙 y=0，内法线 +Y
+  addWall(0, L/2, CH/2, L, CH, [1,0,0], wallInt);               // 左墙 x=0，内法线 +X
+  addWall((fw+B)/2, R, CH/2, B-fw, CH, [0,-1,0], wallInt);      // 顶墙 y=R，内法线 -Y
+  const d = room.door;
+  if(d.y0 > 0.5)   addWall(B, d.y0/2, CH/2, d.y0, CH, [-1,0,0], wallInt);         // 右墙下段
+  if(d.y1 < R-0.5) addWall(B, (d.y1+R)/2, CH/2, R-d.y1, CH, [-1,0,0], wallInt);   // 右墙上段
+  // 顶墙窗（半透明浅蓝，离地 90..210，略移入室内避免与墙 z-fighting）
+  const win = room.win, wz0=90, wz1=210;
+  addWall((win.x0+win.x1)/2, R-0.5, (wz0+wz1)/2, win.x1-win.x0, wz1-wz0, [0,-1,0],
+          0x96C4DE, {transparent:true, opacity:0.78});
+  // 烟道柱（实体盒，配色独立 → 读作"管道"而非神秘板）
+  const f = room.flue;
+  const flue = new THREE.Mesh(new THREE.BoxGeometry(f.maxX-f.minX, f.maxY-f.minY, CH),
+                 new THREE.MeshLambertMaterial({color:hexInt(P.flue)}));
+  flue.position.set((f.minX+f.maxX)/2, (f.minY+f.maxY)/2, CH/2);
+  roomGroup.add(flue);
+}
+// 墙/窗：单面平面，法线指向 normal（lookAt 定向，up=世界 Z 保证高度竖直）
+function addWall(cx, cy, cz, w, h, normal, colorInt, extra){
+  const mat = new THREE.MeshLambertMaterial(Object.assign({color:colorInt, side:THREE.FrontSide}, extra||{}));
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+  mesh.position.set(cx, cy, cz);
+  mesh.up.set(0,0,1);
+  mesh.lookAt(cx+normal[0], cy+normal[1], cz+normal[2]);
+  roomGroup.add(mesh);
+}
+// 地板网格线（z 略抬，压在地板上方）。步长自适应房间尺寸，避免巨大房间生成数万线段
+function addFloorGrid(P, B, R){
+  const stepX = Math.max(50, Math.ceil(B/120/50)*50), stepY = Math.max(50, Math.ceil(R/120/50)*50);
+  const pos = [];
+  for(let gx=0; gx<=B+0.1; gx+=stepX){ pos.push(gx,0,0.2, gx,R,0.2); }
+  for(let gy=0; gy<=R+0.1; gy+=stepY){ pos.push(0,gy,0.2, B,gy,0.2); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  roomGroup.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({color:hexInt(P.grid)})));
+}
+
+// 仅相机刷新 + 绘制（相机轨道 / 缩放用，不重建网格）
+function renderScene(){ syncCamera(); renderer.render(scene, camera); }
+// 数据 / 尺寸变更：跑规则引擎 → 重建房间 + 模块 → 绘制
+function render(){
+  const P = PALETTES[state.paletteIndex];
+  resolveLayout(state.modules);
+  rebuildRoom(P);
+  reconcileMeshes(P);
+  renderScene();
+}
 
 function resizeCanvas(){
   const r = stage.getBoundingClientRect();
   dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.round(r.width*dpr); canvas.height = Math.round(r.height*dpr);
-  canvas.style.width = r.width+'px'; canvas.style.height = r.height+'px';
+  renderer.setPixelRatio(dpr);
+  renderer.setSize(r.width, r.height, false);     // updateStyle=false：CSS 已 100%
+  camera.aspect = r.width / Math.max(1, r.height);
+  camera.updateProjectionMatrix();
   render();
 }
 
-// 把整个场景画到指定 ctx（实时渲染与 PNG 导出共用）。opt: {P, selectedId, warnIds, w, h, focal}
-function drawScene(c, opt){
-  const P = opt.P, W = opt.w, H = opt.h;
-  // 切换全局投影口径，使 project() 对该 ctx 生效（render 与导出尺寸不同）。
-  // 不再「画完还原」：render() 与 hitTest3D() 都会在使用 project() 前重置为主画布实时口径，
-  // 因此导出时的临时口径不会泄漏到命中路径。
-  cssW=W; cssH=H; focal=opt.focal;
-  const view = makeView();
-  const eye = view.eye;
-
-  // ---- 全场景统一 per-face 画家排序：外壳(墙/地板/窗,带 tier 偏置) + 室内(盒子/子体量/烟道,裸 vz) ----
-  // 每个面带 depth=面质心 view 空间 z。墙的 WALL_BIAS≫房间尺度，恒排在室内之后；地板偏置最大、最先画。
-  // 取代旧的「逐盒子分离轴 + Array.sort」——后者比较器非传递(L 形拐角成环)、对相交子体量退化为质心兜底，会穿模。
-  const faces = [];
-  collectRoomFaces(faces, view, P);
-  for(const m of state.modules){
-    pushBoxFaces(faces, boxCorners(m), baseColorOf(m,P), view, eye, P,
-                 m.id===opt.selectedId, opt.warnIds.has(m.id), m);
-    // 子体量(烟道筒/龙头/拉手/台面出挑等):贴外侧的真盒子,拆成面参与同一排序
-    const det = SUBVOL_ON ? DETAILS[m.type] : null;
-    if(det && det.subs) for(const sv of det.subs){
-      const sm = subToModule(m, sv);
-      pushBoxFaces(faces, boxCorners(sm), colorKeyRGB(sv.colorKey, m, P), view, eye, P, false, false);
-    }
+// ===================== 命中测试（射线拾取，自动取最近） =====================
+function hitTest3D(px, py){
+  const r = canvas.getBoundingClientRect();
+  const ndc = new THREE.Vector2((px/r.width)*2-1, -(py/r.height)*2+1);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(modulesGroup.children, true);
+  for(const h of hits){
+    let o = h.object;
+    while(o && o.userData.id===undefined) o = o.parent;
+    if(o) return state.modules.find(m=>m.id===o.userData.id) || null;
   }
-  { // 烟道柱：不可摆柜的室内物体，同样拆成面参与排序
-    const f = room.flue;
-    const fb = {x:(f.minX+f.maxX)/2, y:(f.minY+f.maxY)/2, w:f.maxX-f.minX, d:f.maxY-f.minY, rot:0, baseZ:0, h:CEILING};
-    pushBoxFaces(faces, boxCorners(fb), hex2rgb(P.flue), view, eye, P, false, false);
-  }
-
-  // ---- 从远到近绘制（depth 越大越远、越先画）----
-  faces.sort((a,b)=> b.depth - a.depth);
-  c.lineJoin='round'; c.lineCap='round';
-  drawFaceList(c, faces);
-}
-
-// 把一个长方体的可见面（背剔+投影+depth+decal）推入 out。
-// depth=面质心 view 空间 z（越大越远），供 drawScene 统一 per-face 画家排序——不再用易成环的逐盒子分离轴。
-function pushBoxFaces(out, corners, baseC, view, eye, P, sel, warn, m){
-  const cView = corners.map(view.toView);
-  // 造型 decal:仅当开关开、构件有登记且声明了 decals 时启用
-  const det = (DECAL_ON && m && DETAILS[m.type]) ? DETAILS[m.type] : null;
-  const roleMap = (det && det.decals) ? faceRoleMap(m.rot) : null;
-  const frontSteps = m ? Math.round(m.rot/90) : 0;
-  for(const f of BOX_FACES){
-    const wc = f.idx.map(i=>corners[i]);
-    const center = V.scale(wc.reduce((a,p)=>V.add(a,p),[0,0,0]), 1/4);
-    if(V.dot(f.n, V.sub(eye, center)) <= 0) continue;        // 背面剔除
-    const proj = f.idx.map(i=>project(cView[i]));
-    if(proj.some(q=>q===null)) continue;                      // 近平面：整面丢弃
-    const shade = faceShade(f.n) * (f.kind==='top'?1.04:1);
-    const face = {
-      depth: view.toView(center)[2],   // 面质心 view 空间 z（越大越远、越先画）
-      pts: proj.map(q=>[q[0],q[1]]),
-      fill: shadeRGB(baseC, Math.min(1.15,shade)),
-      stroke: warn ? '#C0492E' : (sel ? P.accent : shadeRGB(baseC, shade*0.62)),
-      lw: (warn||sel) ? 2.4 : 0.8,
-      decals: null
-    };
-    // 编译该面 decal:查局部角色 → 取形状 → 双线性映射到屏幕(掠射面自动降级跳过)
-    if(roleMap){
-      const shapes = det.decals[ roleMap[nkey(f.n)] ];
-      if(shapes && shapes.length){
-        const q = faceQuad(corners, f, frontSteps);
-        const S = q.map(ci => { const k=f.idx.indexOf(ci); return [proj[k][0], proj[k][1]]; });
-        if(!degenerate(S)) face.decals = compileShapes(shapes, uvMapper(S), faceAspect(corners,q), baseC, P, shade);
-      }
-    }
-    out.push(face);
-  }
-}
-
-// （旧 cmpAABB 分离轴排序已移除：作为 Array.sort 比较器非传递、对相交子体量退化为质心兜底，
-//   会导致整柜/子体量穿插。现统一由 drawScene 的 per-face 深度排序处理。）
-
-// 画一组面（已定序，直接按顺序绘制）
-function drawFaceList(c, list){
-  for(const f of list){
-    c.beginPath();
-    f.pts.forEach((p,i)=> i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
-    c.closePath();
-    if(f.fill){ c.fillStyle=f.fill; c.fill(); }
-    if(f.stroke){ c.strokeStyle=f.stroke; c.lineWidth=f.lw; c.stroke(); }
-    // 面贴花:在该面填充描边之后画,(u,v)∈[0,1] 恒在四边形内,无需 clip
-    if(f.decals) for(const d of f.decals){
-      if(!d.pts || d.pts.length<2) continue;
-      c.beginPath();
-      d.pts.forEach((p,i)=> i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
-      if(d.closed) c.closePath();
-      if(d.alpha!=null) c.globalAlpha=d.alpha;
-      if(d.fill){ c.fillStyle=d.fill; c.fill(); }
-      if(d.stroke){ c.strokeStyle=d.stroke; c.lineWidth=d.lw; c.stroke(); }
-      if(d.alpha!=null) c.globalAlpha=1;
-    }
-  }
-}
-
-// 房间静物：地板（L 形）+ 三面墙（高 250）+ 窗 + 烟道柱。全部转成面对象塞进 faces。
-function collectRoomFaces(faces, view, P){
-  const p = room.params, B = room.bounds.maxX, R = p.right, L = room.L, fw = p.flueW, CH = CEILING;
-  const wallRGB = hex2rgb(P.wall), floorRGB = hex2rgb(P.floor);
-  // 深度分层（画家算法：depth 越大越远、越先画）：地板 1e5 > 网格 5e4 > 墙 ~1e4 > 室内物体(盒/烟道, 原始 vz)。
-  // 墙加大偏置，保证凸房间外壳恒排在所有室内家具之后——根治盒子被墙吞 / 穿墙。
-  const WALL_BIAS = 1e4;
-
-  // 通用：给定世界四边形 + 朝外法线 + 基色，做背剔 + 投影 + 入列
-  const quad = (pts3d, normal, rgb, kindTop)=>{
-    const center = V.scale(pts3d.reduce((a,q)=>V.add(a,q),[0,0,0]), 1/pts3d.length);
-    if(V.dot(normal, V.sub(view.eye, center)) <= 0) return; // 背面剔除
-    const proj = pts3d.map(q=>project(view.toView(q)));
-    if(proj.some(q=>q===null)) return;
-    const shade = faceShade(normal) * (kindTop?1.0:1);
-    faces.push({
-      pts: proj.map(q=>[q[0],q[1]]),
-      depth: V.scale(pts3d.reduce((a,q)=>V.add(a,view.toView(q)),[0,0,0]),1/pts3d.length)[2] + WALL_BIAS,
-      fill: shadeRGB(rgb, shade),
-      stroke: shadeRGB(rgb, shade*0.8), lw:0.6
-    });
-  };
-
-  // 地板：L 形多边形（法线 +Z）。凹多边形作为单一水平面，画家算法当一整片处理。
-  {
-    const poly3 = room.poly.map(pt=>[pt[0],pt[1],0]);
-    const normal=[0,0,1];
-    const proj = poly3.map(q=>project(view.toView(q)));
-    if(!proj.some(q=>q===null)){
-      const shade = faceShade(normal);
-      faces.push({
-        pts: proj.map(q=>[q[0],q[1]]),
-        depth: V.scale(poly3.reduce((a,q)=>V.add(a,view.toView(q)),[0,0,0]),1/poly3.length)[2] + 1e5, // 地板永远最远，先画
-        fill: shadeRGB(floorRGB, shade),
-        stroke: shadeRGB(floorRGB, shade*0.85), lw:0.6
-      });
-      // 地板网格（50cm）叠一层细线，增强比例观感（裁剪在地板多边形内由覆盖顺序保证够用）
-      addFloorGrid(faces, view, P, B, R);
-    }
-  }
-
-  // 三面墙（内表面朝向房间内侧，法线指向房间内）。墙厚忽略，画成竖直四边形。
-  // 左墙 x=0，内法线 +X，y∈[0,L]
-  wallQuad(quad, [[0,0,0],[0,L,0],[0,L,CH],[0,0,CH]], [1,0,0], wallRGB);
-  // 顶墙 y=R，内法线 -Y，x∈[fw,B]（含窗，窗单独叠浅蓝）
-  wallQuad(quad, [[fw,R,0],[B,R,0],[B,R,CH],[fw,R,CH]], [0,-1,0], wallRGB);
-  // 底墙 y=0，内法线 +Y，x∈[0,B]
-  wallQuad(quad, [[0,0,0],[B,0,0],[B,0,CH],[0,0,CH]], [0,1,0], wallRGB);
-  // 右墙 x=B，内法线 -X，门洞处断成两段：y∈[0,doorFromBottom] 与 [doorFromBottom+doorW, R]
-  const d = room.door;
-  if(d.y0 > 0.5) wallQuad(quad, [[B,0,0],[B,d.y0,0],[B,d.y0,CH],[B,0,CH]], [-1,0,0], wallRGB);
-  if(d.y1 < R-0.5) wallQuad(quad, [[B,d.y1,0],[B,R,0],[B,R,CH],[B,d.y1,CH]], [-1,0,0], wallRGB);
-
-  // 顶墙窗：浅蓝矩形贴在顶墙内表面，离地约 90..210
-  {
-    const win = room.win, z0=90, z1=210;
-    const pts = [[win.x0,R,z0],[win.x1,R,z0],[win.x1,R,z1],[win.x0,R,z1]];
-    const normal=[0,-1,0];
-    const center = V.scale(pts.reduce((a,q)=>V.add(a,q),[0,0,0]),1/4);
-    if(V.dot(normal, V.sub(view.eye, center)) > 0){
-      const proj = pts.map(q=>project(view.toView(q)));
-      if(!proj.some(q=>q===null)){
-        faces.push({
-          pts: proj.map(q=>[q[0],q[1]]),
-          depth: V.scale(pts.reduce((a,q)=>V.add(a,view.toView(q)),[0,0,0]),1/4)[2] + WALL_BIAS - 50, // 贴所属墙内表面、略前于墙，但仍在室内物体之后
-          fill:'rgba(150,196,222,.78)', stroke:'#5E8FB0', lw:1.4
-        });
-      }
-    }
-  }
-
-  // 注：烟道柱已移至 drawScene 的「室内物体」组（与盒子一起参与分离轴排序），不再作为外壳静物。
-}
-function wallQuad(quad, pts, normal, rgb){ quad(pts, normal, rgb, false); }
-
-// 地板网格线（落在 z=0），作为细线面对象。每条线给一点点深度偏置以压在地板上方。
-function addFloorGrid(faces, view, P, B, R){
-  const gridRGB = hex2rgb(P.grid);
-  const lineSeg = (a,b)=>{
-    const pa=project(view.toView(a)), pb=project(view.toView(b));
-    if(!pa||!pb) return;
-    faces.push({
-      pts:[[pa[0],pa[1]],[pb[0],pb[1]]],
-      depth:(pa[2]+pb[2])/2 + 5e4,            // 比构件远、但比地板近，画在地板之上
-      fill:null, stroke:shadeRGB(gridRGB,0.92), lw:0.6
-    });
-  };
-  // 网格步长按房间尺寸自适应（保险：任何尺寸下两个方向各最多约 120 根线），
-  // 避免巨大 bottom/right 时每帧生成数万根线段拖垮渲染。
-  const stepX = Math.max(50, Math.ceil(B/120/50)*50);
-  const stepY = Math.max(50, Math.ceil(R/120/50)*50);
-  for(let gx=0; gx<=B+0.1; gx+=stepX) lineSeg([gx,0,0],[gx,R,0]);
-  for(let gy=0; gy<=R+0.1; gy+=stepY) lineSeg([0,gy,0],[B,gy,0]);
-}
-
-// 主画布当前投影口径（CSS 像素）。命中测试与渲染必须用同一套，否则点击会错位。
-function liveViewport(){
-  const w = canvas.width/dpr, h = canvas.height/dpr;
-  return {w, h, focal:(h/2)/Math.tan(FOV/2)};
-}
-
-function render(){
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  const P = PALETTES[state.paletteIndex];
-  const vp = liveViewport();
-  drawScene(ctx, {P, selectedId:state.selectedId, warnIds:computeWarnings().ids, w:vp.w, h:vp.h, focal:vp.focal});
-}
-
-// ===================== 命中测试（3D 主视图点击 → 最前盒子） =====================
-function pointInPoly(px,py,poly){ // 射线法（任意多边形）
-  let inside=false;
-  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-    const xi=poly[i][0],yi=poly[i][1], xj=poly[j][0],yj=poly[j][1];
-    if(((yi>py)!==(yj>py)) && px < (xj-xi)*(py-yi)/(yj-yi)+xi) inside=!inside;
-  }
-  return inside;
-}
-// Andrew monotone chain 凸包（点数极少）
-function convexHull(pts){
-  if(pts.length<3) return pts.slice();
-  const ps=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
-  const cross=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
-  const lo=[]; for(const p of ps){ while(lo.length>=2 && cross(lo[lo.length-2],lo[lo.length-1],p)<=0) lo.pop(); lo.push(p); }
-  const up=[]; for(let i=ps.length-1;i>=0;i--){ const p=ps[i]; while(up.length>=2 && cross(up[up.length-2],up[up.length-1],p)<=0) up.pop(); up.push(p); }
-  lo.pop(); up.pop(); return lo.concat(up);
-}
-function hitTest3D(px,py){
-  // 命中测试必须与渲染共用主画布实时投影口径（cssW/cssH/focal）。
-  // 否则会沿用 drawScene 残留值（含导出尺寸或初值 800/600/600），命中多边形相对实际渲染偏移缩放，点击选错/点不中。
-  const vp = liveViewport();
-  cssW=vp.w; cssH=vp.h; focal=vp.focal;
-  const view = makeView();
-  let best=null, bestDepth=Infinity;
-  for(const m of state.modules){
-    const proj = boxCorners(m).map(c=>project(view.toView(c))).filter(Boolean);
-    if(proj.length<3) continue;
-    const hull = convexHull(proj.map(q=>[q[0],q[1]]));
-    if(pointInPoly(px,py,hull)){
-      const d = view.toView([m.x, m.y, m.baseZ + m.h/2])[2]; // 与渲染同口径：用盒中心视图深度，命中"视觉最前"的盒子
-      if(d<bestDepth){ bestDepth=d; best=m; }
-    }
-  }
-  return best;
+  return null;
 }
 
 // ===================== 相机轨道 / 缩放交互 =====================
@@ -820,7 +709,7 @@ canvas.addEventListener('pointermove', e=>{
   cam.az = drag.az0 + (e.offsetX-drag.sx)*k;
   cam.el = clamp(drag.el0 - (e.offsetY-drag.sy)*k, 5*Math.PI/180, 85*Math.PI/180);
   if(Math.abs(e.offsetX-drag.sx)+Math.abs(e.offsetY-drag.sy) > 3) movedFar=true;
-  render();
+  renderScene();
 });
 function endOrbit(){ if(!drag) return; drag=null; canvas.classList.remove('dragging'); }
 canvas.addEventListener('pointerup', endOrbit);
@@ -829,14 +718,14 @@ canvas.addEventListener('wheel', e=>{ e.preventDefault();
   const f = e.deltaY<0 ? 1/1.1 : 1.1;
   const diag = Math.hypot(room.bounds.maxX, room.bounds.maxY, CEILING);
   cam.dist = clamp(cam.dist*f, diag*0.6, diag*4);
-  render();
+  renderScene();
 }, {passive:false});
 
 function resetCamera(){
   cam.az = Math.PI*0.30; cam.el = Math.PI*0.32;
   cam.target = [room.bounds.maxX/2, room.bounds.maxY/2, 90];
   cam.dist = Math.hypot(room.bounds.maxX, room.bounds.maxY, CEILING)*1.55;
-  render();
+  renderScene();
 }
 
 // ===================== 右下角俯视小图（退化为 2D 正交，复用 footprint/吸附） =====================
@@ -951,6 +840,17 @@ function computeWarnings(){
     if(fp.maxX>room.bounds.maxX-2 && fp.maxY>room.door.y0 && fp.minY<room.door.y1){ ids.add(m.id); msgs.add(`${MODULE_TYPES[m.type].label} 挡住门洞/开口`); }
     if(fp.minX<-1||fp.maxX>room.bounds.maxX+1||fp.minY<-1||fp.maxY>room.bounds.maxY+1){ ids.add(m.id); msgs.add(`${MODULE_TYPES[m.type].label} 超出房间`); }
   }
+  // 吊装件竖向穿插：规则引擎已尽力把吊柜抬到下方件之上，但若头顶无空间（如吊柜放到满高塔柜顶），
+  // clampHeight 会把它压回层高内而与下方件穿插——这是物理无解的摆放，标红提示用户挪走。
+  for(const u of state.modules){
+    if(MODULE_TYPES[u.type].layer!=='upper') continue;
+    const fu=footprint(u);
+    for(const o of state.modules){
+      if(o.id===u.id || !rectsOverlap(fu,footprint(o))) continue;
+      const zhi=Math.min(u.baseZ+u.h, o.baseZ+o.h), zlo=Math.max(u.baseZ, o.baseZ);
+      if(zhi-zlo>1){ ids.add(u.id); ids.add(o.id); msgs.add(`${MODULE_TYPES[u.type].label} 上方空间不足（与${MODULE_TYPES[o.type].label}穿插）`); }
+    }
+  }
   return {ids, msgs:[...msgs]};
 }
 
@@ -993,14 +893,14 @@ function updateInspector(){
       <div class="row"><label>宽 W</label><input type="number" id="inW" value="${m.w}" min="20" max="400" step="5"> cm</div>
       <div class="row"><label>深 D</label><input type="number" id="inD" value="${m.d}" min="20" max="400" step="5"> cm</div>
       <div class="row"><label>高 H</label><input type="number" id="inH" value="${m.h}" min="10" max="250" step="5"> cm</div>
-      <div class="row"><label>离地</label><input type="number" id="inZ" value="${m.baseZ}" min="0" max="250" step="5"> cm</div>
+      <div class="row"><label>离地</label><input type="number" id="inZ" value="${m.baseZ}" ${m.type==='wall'?`min="0" max="${CEILING-m.h}" step="1"`:'disabled'} title="${m.type==='wall'?'吊柜底面离地高度，可手动调整；默认顶面贴住房顶':'离地高度由规则引擎自动管理'}"> cm <span class="muted">${m.type==='wall'?'默认贴顶':'自动'}</span></div>
       <div class="row"><label>X</label><input type="number" id="inX" value="${Math.round(m.x)}" step="1"> cm</div>
       <div class="row"><label>Y</label><input type="number" id="inY" value="${Math.round(m.y)}" step="1"> cm</div>
       <div class="row">
         <button class="ibtn" id="btnRot">旋转 90°（${m.rot}°）</button>
         <button class="ibtn danger" id="btnDel">删除</button>
       </div>
-      <div class="muted" style="margin-top:6px;">顶面高度 ${m.baseZ+m.h} cm（层高 ${CEILING}）</div>`;
+      <div class="muted" style="margin-top:6px;">顶面高度 ${m.baseZ+m.h} cm（层高 ${CEILING}）${(m.type==='wall'&&m.baseZ+m.h>=CEILING)?' · 贴顶':''}</div>`;
     // 宽深高离地：oninput 实时改+重画，onchange 才存盘（节流）
     // skipEmpty=true 时，输入框被清空/非法字符不应用（避免坐标类字段瞬移到 0）
     const bindNum=(id,apply,skipEmpty)=>{
@@ -1015,8 +915,9 @@ function updateInspector(){
     bindNum('inW', v=>{ m.w=Math.max(20,v||m.w); clampModule(m); });
     bindNum('inD', v=>{ m.d=Math.max(20,v||m.d); clampModule(m); });
     bindNum('inH', v=>{ m.h=Math.max(10,v||m.h); clampHeight(m); });
-    // 离地允许真 0，但清空时不应用；X/Y 允许负值，同样清空时不应用
-    bindNum('inZ', v=>{ m.baseZ=Math.max(0,v); clampHeight(m); }, true);
+    // 吊柜离地可手动调：改了就置 manualZ，resolveLayout 不再自动贴顶覆盖；其它类型仍由规则托管
+    if(m.type==='wall') bindNum('inZ', v=>{ m.baseZ=Math.max(0,v||0); m.manualZ=true; clampHeight(m); });
+    // X/Y 允许负值，清空时不应用
     bindNum('inX', v=>{ m.x=v; clampModule(m); }, true);
     bindNum('inY', v=>{ m.y=v; clampModule(m); }, true);
     document.getElementById('btnRot').onclick=()=>{ m.rot=(m.rot+90)%360; clampModule(m); commit(); };
@@ -1089,19 +990,33 @@ function hideHintSoon(){ const h=document.getElementById('hint'); clearTimeout(h
 function exportPNG(){
   const P=PALETTES[state.paletteIndex];
   const W=1600, H=1100, footer=42;
-  const ec=document.createElement('canvas'); ec.width=W; ec.height=H+footer;
-  const c=ec.getContext('2d');
-  c.fillStyle='#E7DCC8'; c.fillRect(0,0,ec.width,ec.height);
-  const sel=state.selectedId; state.selectedId=null; // 导出不带选中描边
-  const f=(H/2)/Math.tan(FOV/2);
-  drawScene(c, {P, selectedId:null, warnIds:new Set(), w:W, h:H, focal:f});
+  const sel=state.selectedId; state.selectedId=null;        // 导出不带选中高亮
+  // 临时按导出分辨率渲染（像素比 1，得到精确 W×H 帧；preserveDrawingBuffer 保证可 toDataURL）
+  const prevPR = renderer.getPixelRatio();
+  renderer.setPixelRatio(1);
+  renderer.setSize(W, H, false);
+  camera.aspect = W/H; camera.updateProjectionMatrix();
+  resolveLayout(state.modules); rebuildRoom(P); reconcileMeshes(P);
+  renderScene();
+  const glURL = renderer.domElement.toDataURL('image/png');
+  // 还原屏幕尺寸 + 选中态（resizeCanvas 内部 render 会重建并恢复高亮）
   state.selectedId=sel;
-  // 页脚
-  c.fillStyle=P.text; c.font='600 22px sans-serif'; c.textAlign='left'; c.textBaseline='middle';
-  c.fillText('厨房 3D 概念图 · '+P.name, 28, H+footer/2);
-  c.font='14px sans-serif'; c.textAlign='right';
-  c.fillText(`底 ${room.params.bottom} × 进深 ${room.params.right} × 层高 ${CEILING} cm`, ec.width-28, H+footer/2);
-  download(ec.toDataURL('image/png'), 'kitchen-3d.png');
+  renderer.setPixelRatio(prevPR);
+  resizeCanvas();
+  // 合成：背景 + 3D 画面 + 页脚
+  const img = new Image();
+  img.onload = ()=>{
+    const ec=document.createElement('canvas'); ec.width=W; ec.height=H+footer;
+    const c=ec.getContext('2d');
+    c.fillStyle='#E7DCC8'; c.fillRect(0,0,ec.width,ec.height);
+    c.drawImage(img, 0, 0, W, H);
+    c.fillStyle=P.text; c.font='600 22px sans-serif'; c.textAlign='left'; c.textBaseline='middle';
+    c.fillText('厨房 3D 概念图 · '+P.name, 28, H+footer/2);
+    c.font='14px sans-serif'; c.textAlign='right';
+    c.fillText(`底 ${room.params.bottom} × 进深 ${room.params.right} × 层高 ${CEILING} cm`, ec.width-28, H+footer/2);
+    download(ec.toDataURL('image/png'), 'kitchen-3d.png');
+  };
+  img.src = glURL;
 }
 function download(url,name){ const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
 
@@ -1129,11 +1044,12 @@ function flashBtn(id,msg){ const b=document.getElementById(id); if(b._t) return;
 // ===================== 启动 =====================
 function init(){
   state=loadState(); room=buildRoom(state.roomParams);
+  initThree();                       // 建 WebGL 渲染器 / 场景 / 相机 / 灯光（必须在首帧之前）
   buildToolbar(); buildPaletteSel(); buildPalBody();
   miniFit();
   cam.target=[room.bounds.maxX/2, room.bounds.maxY/2, 90];
   cam.dist=Math.hypot(room.bounds.maxX, room.bounds.maxY, CEILING)*1.55;
-  resizeCanvas(); updateInspector(); hideHintSoon();
+  resizeCanvas(); updateInspector(); hideHintSoon();   // resizeCanvas 内部 render() 会建房间+模块并绘制
 
   document.getElementById('btnReset').onclick=resetCamera;
   document.getElementById('btnPng').onclick=exportPNG;
@@ -1150,8 +1066,8 @@ function init(){
   };
   document.getElementById('btnHelp').onclick=()=>modal('helpModal',true);
   document.getElementById('helpClose').onclick=()=>modal('helpModal',false);
-  document.getElementById('zoomIn').onclick=()=>{ const diag=Math.hypot(room.bounds.maxX,room.bounds.maxY,CEILING); cam.dist=clamp(cam.dist/1.15,diag*0.6,diag*4); render(); };
-  document.getElementById('zoomOut').onclick=()=>{ const diag=Math.hypot(room.bounds.maxX,room.bounds.maxY,CEILING); cam.dist=clamp(cam.dist*1.15,diag*0.6,diag*4); render(); };
+  document.getElementById('zoomIn').onclick=()=>{ const diag=Math.hypot(room.bounds.maxX,room.bounds.maxY,CEILING); cam.dist=clamp(cam.dist/1.15,diag*0.6,diag*4); renderScene(); };
+  document.getElementById('zoomOut').onclick=()=>{ const diag=Math.hypot(room.bounds.maxX,room.bounds.maxY,CEILING); cam.dist=clamp(cam.dist*1.15,diag*0.6,diag*4); renderScene(); };
   document.getElementById('btnImport').onclick=()=>document.getElementById('importFile').click();
   document.getElementById('importFile').onchange=e=>{ if(e.target.files[0]){ importFrom2D(e.target.files[0]); e.target.value=''; } };
   document.querySelectorAll('.modal').forEach(mm=>mm.onclick=e=>{ if(e.target===mm) mm.classList.remove('show'); });
