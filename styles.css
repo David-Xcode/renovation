@@ -522,6 +522,8 @@ td .sub { display: block; font-size: 0.82rem; color: var(--ink-faint); margin-to
 
 /* 强制行的左侧红条 */
 tr.row-must td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+/* 已选行：琥珀左条，克制地指回顶部「我的最终选择」，不再用实心高亮 */
+tr.row-picked td:first-child { box-shadow: inset 3px 0 0 var(--amber); }
 
 /* ---------- 对比表（VS）---------- */
 .versus {
@@ -729,6 +731,112 @@ tr.row-must td:first-child { box-shadow: inset 3px 0 0 var(--red); }
 .footer a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--line); transition: color 0.2s, border-color 0.2s; }
 .footer a:hover { color: var(--red); border-color: var(--red); }
 .footer .disclaimer { max-width: 62ch; margin: 0.9rem auto 0; line-height: 1.65; }
+
+/* ============================================================
+   我的最终选择 — 选购确定区（仅本页用）
+   与下方「选型调研」拉开层级：这里是商品页/官方尺寸图的确定值，
+   规格书质感、肯定语气，不带"约/峰值"打折标注
+   ============================================================ */
+/* 区段横幅：把页面切成「我的选择」与「选型调研」两部分 */
+.part-band {
+  margin: clamp(1rem, 3vw, 2rem) 0 clamp(1.6rem, 4vw, 2.4rem);
+  padding: clamp(1.2rem, 3vw, 1.7rem) clamp(1.2rem, 3vw, 1.9rem);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem 1.2rem;
+  flex-wrap: wrap;
+}
+.part-band--pick     { background: var(--ink); color: var(--paper); box-shadow: var(--shadow-md); }
+.part-band--research { background: var(--paper-2); border: 1px solid var(--line); }
+.part-band__tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.part-band--pick .part-band__tag     { color: var(--amber); }
+.part-band--research .part-band__tag { color: var(--red); }
+.part-band__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3.6vw, 2.3rem);
+  line-height: 1.1;
+}
+.part-band__note { width: 100%; font-size: 0.92rem; line-height: 1.6; }
+.part-band--pick .part-band__note     { color: rgba(243,238,227,.82); }
+.part-band--research .part-band__note { color: var(--ink-soft); }
+
+/* 三件套总览：一眼看清买了啥 + 合计到手价 */
+.pick-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.7rem; margin-bottom: 1.6rem; }
+.pick-sum__item {
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+.pick-sum__role  { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+.pick-sum__model { font-family: var(--font-display); font-weight: 600; font-size: 1.16rem; margin: 0.15rem 0 0.25rem; line-height: 1.2; }
+.pick-sum__price { font-family: var(--font-mono); font-weight: 600; color: var(--red-deep); font-size: 0.92rem; }
+.pick-sum__total {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.2rem;
+}
+.pick-sum__total .l { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+.pick-sum__total .v { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; }
+.pick-sum__total .v small { font-family: var(--font-body); font-size: 0.8rem; font-weight: 400; color: rgba(243,238,227,.7); }
+
+/* 单件规格卡 */
+.pick-card {
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  margin-bottom: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+.pick-card__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1.5px solid var(--ink);
+}
+.pick-card__role  { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--red); }
+.pick-card__model { font-family: var(--font-display); font-weight: 600; font-size: 1.3rem; line-height: 1.15; }
+.pick-card__price { margin-left: auto; font-family: var(--font-mono); font-weight: 600; color: var(--red-deep); white-space: nowrap; }
+
+/* 规格网格：label 左、mono 数值右 */
+.spec-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 0 1.6rem; }
+.spec-list > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.42rem 0;
+  border-bottom: 1px dotted var(--line);
+}
+.spec-list dt { color: var(--ink-soft); font-size: 0.9rem; flex-shrink: 0; }
+.spec-list dd { font-family: var(--font-mono); font-weight: 600; color: var(--ink); font-size: 0.9rem; text-align: right; }
+.spec-list dd em { font-style: normal; color: var(--red-deep); }
+
+@media (max-width: 720px) {
+  .pick-card__price { margin-left: 0; width: 100%; }
+  .spec-list dd { font-size: 0.84rem; }
+}
 
 /* ---------- 入场动画 ---------- */
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
