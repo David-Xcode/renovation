@@ -96,7 +96,7 @@
     <a class="tbtn" href="materials-list.html" style="text-decoration:none" title="全屋材料清单·规格与标准">🧾 材料清单</a>
     <a class="tbtn" href="contract.html" style="text-decoration:none" title="装修合同成稿">📝 装修合同</a>
     <a class="tbtn" href="kitchen-appliances.html" style="text-decoration:none" title="嵌入式蒸箱/油烟机/微波炉选配与安装隔热规范">🔌 厨电选配</a>
-    <a class="tbtn" href="kitchen-budget.html" style="text-decoration:none" title="北上广国产高端完整分项报价·中位约8.5万">💰 报价预算</a>
+    <a class="tbtn" href="kitchen-budget.html" style="text-decoration:none" title="北上广国产高端完整分项报价·预算区间约5.9–11.7万">💰 报价预算</a>
     <a class="tbtn" href="kitchen-3d.html" style="text-decoration:none" title="厨房 3D 概念渲染">🧊 3D 视图</a>
     <a class="tbtn" href="kitchen-design.html" style="text-decoration:none" title="定稿设计方案与现场复核清单">📋 设计方案</a>
     <button class="tbtn" id="btnFit">适应窗口</button>
@@ -171,19 +171,19 @@
 
 // 构件类型库（俯视尺寸 cm；layer=floor 落地 / upper 吊装；role 用于工作三角）
 const MODULE_TYPES = {
-  base:    {label:'底柜',    w:60,  d:60, layer:'floor', role:'cabinet'},
-  tall:    {label:'高柜',    w:60,  d:60, layer:'floor', role:'cabinet'},
-  tower:   {label:'电器塔柜',w:60,  d:60, layer:'floor', role:'cabinet'},
-  drawer:  {label:'抽屉柜',  w:60,  d:60, layer:'floor', role:'cabinet'},
+  base:    {label:'底柜',    w:60,  d:70, layer:'floor', role:'cabinet'},
+  tall:    {label:'高柜',    w:60,  d:70, layer:'floor', role:'cabinet'},
+  tower:   {label:'电器塔柜',w:60,  d:70, layer:'floor', role:'cabinet'},
+  drawer:  {label:'抽屉柜',  w:60,  d:70, layer:'floor', role:'cabinet'},
   corner:  {label:'转角柜',  w:46,  d:54, layer:'floor', role:'cabinet'},
-  counter: {label:'操作台',  w:60,  d:60, layer:'floor', role:'counter'},
+  counter: {label:'操作台',  w:60,  d:70, layer:'floor', role:'counter'},
   island:  {label:'岛台',    w:120, d:80, layer:'floor', role:'counter'},
   wall:    {label:'吊柜',    w:60,  d:35, layer:'upper', role:'cabinet'},
-  sink:    {label:'水槽',    w:60,  d:60, layer:'floor', role:'sink'},
-  cooktop: {label:'灶台',    w:70,  d:60, layer:'floor', role:'cooktop'},
+  sink:    {label:'水槽',    w:60,  d:70, layer:'floor', role:'sink'},
+  cooktop: {label:'灶台',    w:70,  d:70, layer:'floor', role:'cooktop'},
   fridge:  {label:'冰箱',    w:70,  d:70, layer:'floor', role:'fridge'},
-  dish:    {label:'洗碗机',  w:45,  d:60, layer:'floor', role:'appliance'},
-  oven:    {label:'烤箱',    w:60,  d:60, layer:'floor', role:'appliance'},
+  dish:    {label:'洗碗机',  w:45,  d:70, layer:'floor', role:'appliance'},
+  oven:    {label:'烤箱',    w:60,  d:70, layer:'floor', role:'appliance'},
   micro:   {label:'微波炉',  w:50,  d:40, layer:'upper', role:'appliance'},
   hood:    {label:'油烟机',  w:90,  d:50, layer:'upper', role:'appliance'},
 };
@@ -240,25 +240,25 @@ function starterModules(){
   const mk = (type,x,y,rot,w,d)=>({id:uid(),type,x,y,w,d,rot});
   return [
     // 左墙：转角 → 水槽 → 洗碗机 → 灶 → 备餐
-    mk('corner', 30, 30, 90, 60,60),  // 左下转角柜
-    mk('sink',   30,110, 90,100,60),  // 水槽柜100
-    mk('dish',   30,182.5,90,45,60),  // 洗碗机45
-    mk('cooktop',30,250, 90, 90,60),  // 双头电磁灶90
-    mk('base',   30,315, 90, 40,60),  // 灶旁备餐落台40
+    mk('corner', 35, 35, 90, 70,70),  // 左下转角柜：70×70 贴双墙
+    mk('sink',   35,120, 90,100,70),  // 水槽柜100（深70，让位转角后下移）
+    mk('dish',   35,192.5,90,45,70),  // 洗碗机45（深70）
+    mk('cooktop',35,260, 90, 90,70),  // 双头电磁灶90（深70）
+    mk('base',   35,320.5,90, 31,70),  // 灶旁备餐落台31（深70，缩窄避让烟道）
     // 底墙：转角 ▸ 塔柜 ▸ 冰箱（连续无缝）
-    mk('tower', 102.5,30, 0, 85,60),  // 微蒸烤塔柜：贴转角
-    mk('fridge',180,  35, 0, 70,70),  // 嵌入冰箱70：贴塔柜
-    // 顶墙窗下：3 连备餐台（各50，填满151cm墙）
-    mk('base',   92,360,180, 50,50),  // 窗下备餐台①
-    mk('base',  142,360,180, 50,50),  // 窗下备餐台②
-    mk('base',  192,360,180, 50,50),  // 窗右备餐台③
+    mk('tower', 109,  35, 0, 78,70),  // 微蒸烤塔柜：贴转角(左缘70)，宽78、深70
+    mk('fridge',183,  35, 0, 70,70),  // 嵌入冰箱70：贴塔柜(左缘148)，零缝隙到底墙218
+    // 顶墙窗下：3 连备餐台（深65，填满 x70–217）
+    mk('base',   93.5,352.5,180, 47,65),// 窗下备餐台①：左缘70、宽47（避让左墙深柜）
+    mk('base',  142,  352.5,180, 50,65),// 窗下备餐台②：深65
+    mk('base',  192,  352.5,180, 50,65),// 窗右备餐台③：深65
     // 吊柜
-    mk('hood',   25,250, 90, 90,50),  // 油烟机：灶上方
-    mk('wall',   17.5,132.5,90,145,35),// 左墙吊柜①：水槽+洗碗机段
-    mk('wall',   17.5,250, 90, 90,35), // 左墙吊柜②：油烟机上方
-    mk('wall',   17.5,315, 90, 40,35), // 左墙吊柜③：左备餐上方
-    mk('wall',   30, 30, 0, 60,60),   // 转角上方吊柜
-    mk('wall',  180, 30, 0, 70,60),   // 冰箱顶吊柜
+    mk('hood',   25,260, 90, 90,50),  // 油烟机：灶上方（随灶下移）
+    mk('wall',   17.5,142.5,90,145,35),// 左墙吊柜①：水槽+洗碗机段（随下柜下移）
+    mk('wall',   17.5,260, 90, 90,35), // 左墙吊柜②：油烟机上方（随下柜下移）
+    mk('wall',   17.5,320.5,90, 31,35),// 左墙吊柜③：左备餐上方（随备餐缩窄下移）
+    mk('wall',   35, 35, 0, 70,70),   // 转角上方吊柜：随转角70×70
+    mk('wall',  183, 35, 0, 70,70),   // 冰箱顶吊柜：深70 与冰箱齐平、随冰箱右移
   ];
 }
 function defaultState(){ return {paletteIndex:0, roomParams:{...DEFAULT_ROOM}, modules:starterModules(), selectedId:null}; }
