@@ -96,7 +96,7 @@
     <a class="tbtn" href="materials-list.html" style="text-decoration:none" title="全屋材料清单·规格与标准">🧾 材料清单</a>
     <a class="tbtn" href="contract.html" style="text-decoration:none" title="装修合同成稿">📝 装修合同</a>
     <a class="tbtn" href="kitchen-appliances.html" style="text-decoration:none" title="嵌入式蒸箱/油烟机/微波炉选配与安装隔热规范">🔌 厨电选配</a>
-    <a class="tbtn" href="kitchen-budget.html" style="text-decoration:none" title="北上广国产高端完整分项报价·预算区间约5.9–11.7万">💰 报价预算</a>
+    <a class="tbtn" href="kitchen-budget.html" style="text-decoration:none" title="北上广国产高端完整分项报价·预算区间约6.6–12.1万">💰 报价预算</a>
     <a class="tbtn" href="kitchen-3d.html" style="text-decoration:none" title="厨房 3D 概念渲染">🧊 3D 视图</a>
     <a class="tbtn" href="kitchen-design.html" style="text-decoration:none" title="定稿设计方案与现场复核清单">📋 设计方案</a>
     <button class="tbtn" id="btnFit">适应窗口</button>
@@ -182,10 +182,10 @@ const MODULE_TYPES = {
   sink:    {label:'水槽',    w:60,  d:70, layer:'floor', role:'sink'},
   cooktop: {label:'灶台',    w:70,  d:70, layer:'floor', role:'cooktop'},
   fridge:  {label:'冰箱',    w:70,  d:70, layer:'floor', role:'fridge'},
-  dish:    {label:'洗碗机',  w:45,  d:70, layer:'floor', role:'appliance'},
+  dish:    {label:'洗碗机',  w:60,  d:70, layer:'floor', role:'appliance'},
   oven:    {label:'烤箱',    w:60,  d:70, layer:'floor', role:'appliance'},
   micro:   {label:'微波炉',  w:50,  d:40, layer:'upper', role:'appliance'},
-  hood:    {label:'油烟机',  w:90,  d:50, layer:'upper', role:'appliance'},
+  hood:    {label:'油烟机',  w:90,  d:38, layer:'upper', role:'appliance'},
 };
 const TOOL_GROUPS = [
   {name:'柜体', types:['base','drawer','tall','tower','corner','counter','island','wall']},
@@ -228,7 +228,7 @@ function buildRoom(p){
 }
 
 // ===================== 状态 =====================
-const LS = 'kitchen-planner-v7';   // v7=与 3D 一致：窗户改贴烟囱(winFromLeft=0)，旧 v6 存档自动让位
+const LS = 'kitchen-planner-v8';   // v8=洗碗机加宽60+水槽缩窄85，与 3D 一致；旧 v7 存档自动让位
 let state = null, room = null;
 const view = {scale:1, panX:0, panY:0, fitted:false};
 let dpr = 1;
@@ -241,9 +241,9 @@ function starterModules(){
   return [
     // 左墙：转角 → 水槽 → 洗碗机 → 灶 → 备餐
     mk('corner', 35, 35, 90, 70,70),  // 左下转角柜：70×70 贴双墙
-    mk('sink',   35,120, 90,100,70),  // 水槽柜100（深70，让位转角后下移）
-    mk('dish',   35,192.5,90,45,70),  // 洗碗机45（深70）
-    mk('cooktop',35,260, 90, 90,70),  // 双头电磁灶90（深70）
+    mk('sink',   35,112.5,90,85,70),  // 水槽柜85（深70，缩窄让位洗碗机加宽）
+    mk('dish',   35,185, 90,60,70),  // 洗碗机60（深70，标准嵌入宽）
+    mk('cooktop',35,260, 90, 90,70),  // 双头燃气灶（方太 TEK20，左右各5.2kW；柜体90深70）
     mk('base',   35,320.5,90, 31,70),  // 灶旁备餐落台31（深70，缩窄避让烟道）
     // 底墙：转角 ▸ 塔柜 ▸ 冰箱（连续无缝）
     mk('tower', 109,  35, 0, 78,70),  // 微蒸烤塔柜：贴转角(左缘70)，宽78、深70
@@ -253,7 +253,7 @@ function starterModules(){
     mk('base',  142,  352.5,180, 50,65),// 窗下备餐台②：深65
     mk('base',  192,  352.5,180, 50,65),// 窗右备餐台③：深65
     // 吊柜
-    mk('hood',   25,260, 90, 90,50),  // 油烟机：灶上方（随灶下移）
+    mk('hood',   19,260, 90, 90,38),  // 油烟机 CXW-358-V10-G：欧式顶吸T型（深38贴墙，随灶下移）
     mk('wall',   17.5,142.5,90,145,35),// 左墙吊柜①：水槽+洗碗机段（随下柜下移）
     mk('wall',   17.5,260, 90, 90,35), // 左墙吊柜②：油烟机上方（随下柜下移）
     mk('wall',   17.5,320.5,90, 31,35),// 左墙吊柜③：左备餐上方（随备餐缩窄下移）
@@ -409,8 +409,12 @@ function drawIcon(c,m,sx,sy,w,h,P){
   c.save(); c.strokeStyle=P.applianceEdge; c.lineWidth=1.4; c.fillStyle='rgba(255,255,255,.55)';
   if(m.type==='sink' && r>30){ roundRect(c,sx+6,sy+6,w-12,h-12,5); c.fill(); c.stroke();
     c.beginPath(); c.arc(cx, sy+12, 2.4, 0, 7); c.fillStyle=P.applianceEdge; c.fill(); }
-  else if(m.type==='cooktop' && r>30){ const o=Math.min(w,h)/4;
-    for(const [dx,dy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ c.beginPath(); c.arc(cx+dx*o, cy+dy*o, o*0.6, 0, 7); c.stroke(); } }
+  else if(m.type==='cooktop' && r>30){ const o=Math.min(w,h)/4, br=o*0.85;
+    // 双眼燃气灶：两个炉头（同心圆 + 十字锅支架），左右排布
+    for(const dx of [-1,1]){ const bx=cx+dx*o;
+      c.beginPath(); c.arc(bx, cy, br, 0, 7); c.stroke();
+      c.beginPath(); c.arc(bx, cy, br*0.5, 0, 7); c.stroke();
+      c.beginPath(); c.moveTo(bx-br,cy); c.lineTo(bx+br,cy); c.moveTo(bx,cy-br); c.lineTo(bx,cy+br); c.stroke(); } }
   else if(m.type==='fridge' && r>30){ c.beginPath(); c.moveTo(sx+w-7,sy+5); c.lineTo(sx+w-7,sy+h-5); c.stroke(); }
   else if(m.type==='hood' && r>24){ for(let i=1;i<4;i++){ c.beginPath(); c.moveTo(sx+w*i/4,sy+4); c.lineTo(sx+w*i/4,sy+h-4); c.stroke(); } }
   else if(m.type==='drawer' && r>24){ for(let i=1;i<4;i++){ c.beginPath(); c.moveTo(sx+5,sy+h*i/4); c.lineTo(sx+w-5,sy+h*i/4); c.stroke(); } }
