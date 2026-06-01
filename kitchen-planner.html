@@ -184,12 +184,13 @@ const MODULE_TYPES = {
   fridge:  {label:'冰箱',    w:70,  d:70, layer:'floor', role:'fridge'},
   dish:    {label:'洗碗机',  w:60,  d:70, layer:'floor', role:'appliance'},
   oven:    {label:'烤箱',    w:60,  d:70, layer:'floor', role:'appliance'},
+  ovenbase:{label:'烤箱地柜',w:60,  d:70, layer:'floor', role:'cabinet'},
   micro:   {label:'微波炉',  w:50,  d:40, layer:'upper', role:'appliance'},
   hood:    {label:'油烟机',  w:90,  d:38, layer:'upper', role:'appliance'},
 };
 const TOOL_GROUPS = [
   {name:'柜体', types:['base','drawer','tall','tower','corner','counter','island','wall']},
-  {name:'水 · 灶 · 电器', types:['sink','cooktop','hood','fridge','dish','oven','micro']},
+  {name:'水 · 灶 · 电器', types:['sink','cooktop','hood','fridge','dish','oven','ovenbase','micro']},
 ];
 
 // 原木暖色配色方案
@@ -245,9 +246,10 @@ function starterModules(){
     mk('dish',   35,185, 90,60,70),  // 洗碗机60（深70，标准嵌入宽）
     mk('cooktop',35,260, 90, 90,70),  // 双头燃气灶（方太 TEK20，左右各5.2kW；柜体90深70）
     mk('base',   35,320.5,90, 31,70),  // 灶旁备餐落台31（深70，缩窄避让烟道）
-    // 底墙：转角 ▸ 塔柜 ▸ 冰箱（连续无缝）
-    mk('tower', 109,  35, 0, 78,70),  // 微蒸烤塔柜：贴转角(左缘70)，宽78、深70
-    mk('fridge',183,  35, 0, 70,70),  // 嵌入冰箱70：贴塔柜(左缘148)，零缝隙到底墙218
+    // 底墙：转角 ▸ 烤箱地柜+吊柜 ▸ 冰箱（连续无缝，与 3D 嵌入版同步）
+    mk('ovenbase',109, 35, 0, 78,70),  // 嵌入式烤箱地柜：贴转角(左缘70)，宽78、深70（灶下烤箱搬来冰箱旁）
+    mk('wall',  109,  35, 0, 78,70),   // 烤箱地柜上方吊柜：与转角顶吊柜连成上排
+    mk('fridge',183,  35, 0, 70,70),  // 嵌入冰箱70：贴烤箱地柜(左缘148)，零缝隙到底墙218
     // 顶墙窗下：3 连备餐台（深65，填满 x70–217）
     mk('base',   93.5,352.5,180, 47,65),// 窗下备餐台①：左缘70、宽47（避让左墙深柜）
     mk('base',  142,  352.5,180, 50,65),// 窗下备餐台②：深65
@@ -403,7 +405,7 @@ function drawModule(c,T,m,P,selected,warn){
   c.restore();
 }
 
-// 简单图标：水槽 / 灶台 / 冰箱 / 油烟机
+// 简单图标：水槽 / 灶台 / 冰箱 / 油烟机 / 烤箱地柜
 function drawIcon(c,m,sx,sy,w,h,P){
   const cx=sx+w/2, cy=sy+h/2, r=Math.min(w,h);
   c.save(); c.strokeStyle=P.applianceEdge; c.lineWidth=1.4; c.fillStyle='rgba(255,255,255,.55)';
@@ -420,6 +422,11 @@ function drawIcon(c,m,sx,sy,w,h,P){
   else if(m.type==='drawer' && r>24){ for(let i=1;i<4;i++){ c.beginPath(); c.moveTo(sx+5,sy+h*i/4); c.lineTo(sx+w-5,sy+h*i/4); c.stroke(); } }
   else if(m.type==='tower' && r>24){ const s=Math.min(w,h)*0.5; roundRect(c,cx-s/2,cy-s/2,s,s,3); c.stroke(); c.beginPath(); c.moveTo(cx-s/2,cy); c.lineTo(cx+s/2,cy); c.stroke(); }
   else if(m.type==='dish' && r>24){ roundRect(c,sx+5,sy+5,w-10,h-10,4); c.stroke(); }
+  else if(m.type==='ovenbase' && r>24){ const bw=w*0.62, bh=h*0.46, bx=cx-bw/2, by=cy-bh/2+h*0.1;
+    // 烤箱门：圆角门框 + 顶部横把手 + 门内玻璃窗上沿（偏柜下部，区别于塔柜的方块中线）
+    roundRect(c,bx,by,bw,bh,3); c.stroke();
+    c.beginPath(); c.moveTo(bx+bw*0.16,by-4); c.lineTo(bx+bw*0.84,by-4); c.stroke();
+    c.beginPath(); c.moveTo(bx+4,by+bh*0.34); c.lineTo(bx+bw-4,by+bh*0.34); c.stroke(); }
   c.restore();
 }
 

@@ -186,18 +186,19 @@ const MODULE_TYPES = {
   fridge:  {label:'冰箱',    w:70,  d:70, layer:'floor', role:'fridge'},
   dish:    {label:'洗碗机',  w:60,  d:70, layer:'floor', role:'appliance'},
   oven:    {label:'烤箱',    w:60,  d:70, layer:'floor', role:'appliance'},
+  ovenbase:{label:'烤箱地柜',w:60,  d:70, layer:'floor', role:'cabinet'},
   micro:   {label:'微波炉',  w:50,  d:40, layer:'upper', role:'appliance'},
   hood:    {label:'油烟机',  w:90,  d:38, layer:'upper', role:'appliance'},
 };
 const TOOL_GROUPS = [
   {name:'柜体', types:['base','drawer','tall','tower','corner','counter','island','wall']},
-  {name:'水 · 灶 · 电器', types:['sink','cooktop','range','hood','fridge','dish','oven','micro']},
+  {name:'水 · 灶 · 电器', types:['sink','cooktop','range','hood','fridge','dish','oven','ovenbase','micro']},
 ];
 
 // 3D 高度默认表（单位 cm；层高=250）。h=构件自身高度，baseZ=底面离地高度，顶面=baseZ+h
 // 注：吊柜(wall)的 baseZ 由 resolveLayout 按「层高-高」实时重算贴顶，此处 180 仅为兜底初值
-const DEFAULT_H     = {base:83, tall:220, tower:220, drawer:83, corner:95, counter:83, island:90, wall:70,  sink:95, cooktop:83, range:83, fridge:185, dish:95, oven:60, micro:35, hood:33};
-const DEFAULT_BASEZ = {base:0,  tall:0,   tower:0,    drawer:0,  corner:0,  counter:0,  island:0,  wall:180, sink:0,  cooktop:0,  range:0,  fridge:0,   dish:0,  oven:85, micro:150, hood:152};
+const DEFAULT_H     = {base:83, tall:220, tower:220, drawer:83, corner:95, counter:83, island:90, wall:70,  sink:95, cooktop:83, range:83, fridge:185, dish:95, oven:60, ovenbase:90, micro:35, hood:33};
+const DEFAULT_BASEZ = {base:0,  tall:0,   tower:0,    drawer:0,  corner:0,  counter:0,  island:0,  wall:180, sink:0,  cooktop:0,  range:0,  fridge:0,   dish:0,  oven:85, ovenbase:0, micro:150, hood:152};
 
 // 原木暖色配色方案（直接复用 2D 的颜色键）
 const PALETTES = [
@@ -237,7 +238,7 @@ function buildRoom(p){
 // 注：原手写向量库 V 已移除——几何计算改由 Three.js 承担（向量/矩阵/投影/深度缓冲均内建）。
 
 // ===================== 状态 =====================
-const LS3 = 'kitchen-3d-v10';     // 独立 key，不污染 2D；v10=双预设(台面版/塔柜版)顶栏可切换、新增 range 灶具一体类型；旧 v9 工作存档与默认槽一并让位，下次开页用新默认
+const LS3 = 'kitchen-3d-v11';     // 独立 key，不污染 2D；v11=三预设(嵌入版/台面版/塔柜版)顶栏循环切换、新增 ovenbase 烤箱地柜类型、默认改嵌入版；旧 v10 工作存档与默认槽一并让位，下次开页用新默认
 const LS3_DEF = LS3 + '-default'; // 用户「设为默认」存的槽：恢复默认 / 换设备首开都优先用它，无此槽才回退写死的 starterModules()
 const LS2 = 'kitchen-planner-v1'; // 仅用于「从 2D 衔接」时按钮提示，不写
 let state = null, room = null;
@@ -249,28 +250,31 @@ let dpr = 1;
 
 function uid(){ return 'm'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36); }
 
-// 起始布局 = 两套定稿预设（8m² L 形），顶栏「🔀 方案」一键切换：
+// 起始布局 = 三套定稿预设（8m² L 形），顶栏「🔀 方案」一键循环切换：
+//   embed  （嵌入版·默认）：灶台纯灶头，烤箱独立做成「烤箱地柜」嵌在冰箱旁，灶下不再放烤箱
 //   counter（台面版）：拆电器塔→底柜90台面+上吊柜、灶具一体(灶+下烤箱)、无微波炉
 //   tower  （塔柜版）：原方案，底墙中段为满高微蒸烤电器塔柜、灶台为纯灶头（烤箱在塔柜里）
 // 仅声明「意图」（类型/位置/朝向/尺寸/自身高度）；baseZ（离地）交给 resolveLayout 规则引擎算。
-const PRESET_LABELS = { counter:'台面版', tower:'塔柜版' };
-const DEFAULT_PRESET = 'counter';
+const PRESET_LABELS = { counter:'台面版', tower:'塔柜版', embed:'嵌入版' };
+const DEFAULT_PRESET = 'embed';
 function starterModules(preset){
   const mk = (type,x,y,rot,w,d,h)=>({id:uid(), type, x, y, rot, w, d, h, baseZ:0});
-  const counter = (preset !== 'tower');    // 默认（含未知值）= 台面版
   return [
     // —— 左墙（自下而上）= 转角 → 水槽 → 洗碗机 → 灶 → 备餐；台面统一90，沉灶低7cm ——
     mk('corner', 35, 35, 90, 70,70, 90),   // 左下转角柜：70×70 贴双墙
     mk('sink',   35,112.5,90,85,70, 90),   // 水槽柜85：缩窄让位洗碗机加宽（深70）
     mk('dish',   35,185, 90,60,70, 90),    // 洗碗机60嵌入：标准嵌入宽（深70）
-    // 灶：台面版用 range（灶+下烤箱一体），塔柜版用 cooktop（纯灶头，烤箱在塔柜里）
-    mk(counter?'range':'cooktop', 35,260, 90, 90,70, 83), // 双头燃气灶（方太 TEK20）沉灶低7cm（柜体90深70）
+    // 灶：仅台面版用 range（灶+下烤箱一体）；嵌入版/塔柜版用 cooktop（纯灶头，烤箱另置）
+    mk(preset==='counter'?'range':'cooktop', 35,260, 90, 90,70, 83), // 双头燃气灶（方太 TEK20）沉灶低7cm（柜体90深70）
     mk('base',   35,320.5,90, 31,70, 90),  // 灶旁备餐落台31（深70，缩窄避让烟道）
-    // —— 底墙中段（连续无缝：左缘 70→148→218）：台面版=底柜90台面+上吊柜；塔柜版=满高微蒸烤电器塔柜 ——
-    ...(counter
-      ? [ mk('base', 109,35, 0, 78,70, 90),    // 转角台面延伸段：原塔柜位改底柜+90台面，与转角台面连成一片
-          mk('wall', 109,35, 0, 78,70, 70) ]   // 台面段上方吊柜：与转角顶吊柜齐底(180)连成上排
-      : [ mk('tower',109,35, 0, 78,70,250) ]), // 微蒸烤塔柜：贴转角(左缘70)，宽78、深70（满高，上方无吊柜）
+    // —— 底墙中段（连续无缝：左缘 70→148）：嵌入版=烤箱地柜+上吊柜；台面版=底柜90台面+上吊柜；塔柜版=满高微蒸烤电器塔柜 ——
+    ...(preset==='tower'
+      ? [ mk('tower',   109,35, 0, 78,70,250) ]   // 微蒸烤塔柜：贴转角(左缘70)，宽78、深70（满高，上方无吊柜）
+      : preset==='embed'
+      ? [ mk('ovenbase',109,35, 0, 78,70, 90),    // 嵌入式烤箱地柜：灶下烤箱搬来冰箱旁，宽78深70（上方有吊柜）
+          mk('wall',    109,35, 0, 78,70, 70) ]   // 烤箱地柜上方吊柜：与转角顶吊柜齐底(180)连成上排
+      : [ mk('base',    109,35, 0, 78,70, 90),    // 台面版：原塔柜位改底柜+90台面，与转角台面连成一片
+          mk('wall',    109,35, 0, 78,70, 70) ]), // 台面段上方吊柜：与转角顶吊柜齐底(180)连成上排
     mk('fridge',183,  35, 0, 70,70,185),   // 嵌入冰箱70：贴中段(左缘148)，零缝隙到底墙218
     // —— 顶墙窗下 = 3 连看景备餐台（深65，填满 x70–217）——
     mk('base',   93.5,352.5,180, 47,65, 90),// 窗下备餐台①：左缘70、宽47（避让左墙深柜）
@@ -443,6 +447,21 @@ DETAILS.range = { decals: { top: DETAILS.cooktop.decals.top, front:[
   {"kind":"rect","x":0.225,"y":0.43,"w":0.55,"h":0.47,"r":0.02,"fill":"_glass"},
   {"kind":"rect","x":0.225,"y":0.43,"w":0.55,"h":0.47,"r":0.02,"stroke":"_hi","lw":1.5,"alpha":0.4},
   {"kind":"line","x1":0.225,"y1":0.66,"x2":0.775,"y2":0.66,"stroke":"_steel","lw":1,"alpha":0.4}
+]}};
+
+// ovenbase（烤箱地柜）= 顶面连续台面 + 正面上抽屉、下嵌烤箱玻璃门（灶头另置左墙，此柜只放烤箱）。
+// 顶面直接引用 base.top（不复制，避免两份贴花走样）；正面 = 抽屉 + 烤箱腔阴影 + 控制条/旋钮 + 玻璃门 + 门拉手。
+DETAILS.ovenbase = { decals: { top: DETAILS.base.decals.top, front:[
+  {"kind":"rect","x":0,"y":0,"w":1,"h":0.06,"fill":"_shadow"},
+  {"kind":"rect","x":0.04,"y":0.10,"w":0.92,"h":0.20,"r":0.012,"stroke":"_dark","lw":1.2},
+  {"kind":"line","x1":0.34,"y1":0.205,"x2":0.66,"y2":0.205,"stroke":"_metal","lw":2.4},
+  {"kind":"rect","x":0.10,"y":0.35,"w":0.80,"h":0.60,"r":0.025,"fill":"_shadow"},
+  {"kind":"rect","x":0.155,"y":0.39,"w":0.69,"h":0.045,"r":0.012,"fill":"_metal"},
+  {"kind":"circle","cx":0.22,"cy":0.4125,"rx":0.02,"fill":"_dark","stroke":"_steel","lw":1},
+  {"kind":"circle","cx":0.78,"cy":0.4125,"rx":0.02,"fill":"_dark","stroke":"_steel","lw":1},
+  {"kind":"rect","x":0.155,"y":0.49,"w":0.69,"h":0.42,"r":0.02,"fill":"_glass"},
+  {"kind":"rect","x":0.155,"y":0.49,"w":0.69,"h":0.42,"r":0.02,"stroke":"_hi","lw":1.5,"alpha":0.4},
+  {"kind":"line","x1":0.155,"y1":0.62,"x2":0.845,"y2":0.62,"stroke":"_steel","lw":1,"alpha":0.4}
 ]}};
 
 // 颜色键 → css。特殊键派生自父基色（禁硬编码 hex，换配色不失真）。贴图统一 shade=1（不预打光，交给 Three 灯光）
@@ -1070,7 +1089,7 @@ function modal(id,show){ document.getElementById(id).classList.toggle('show',sho
 // 按钮短暂显示提示文字再复原：给「设为默认」一个无弹窗的成功反馈
 function flashBtn(id,msg){ const b=document.getElementById(id); if(b._t) return; const old=b.textContent; b.textContent=msg; b._t=setTimeout(()=>{ b.textContent=old; b._t=null; },1200); }
 
-// —— 双预设：在「台面版」「塔柜版」两套定稿布局间切换（点击即换、不弹确认；保留当前配色与房型）——
+// —— 三预设：在「嵌入版」「台面版」「塔柜版」三套定稿布局间循环切换（点击即换、不弹确认；保留当前配色与房型）——
 function updatePresetBtn(){ const b=document.getElementById('btnPreset'); if(b) b.textContent='🔀 方案：'+(PRESET_LABELS[state.preset]||PRESET_LABELS[DEFAULT_PRESET]); }
 function applyPreset(preset){
   state.preset=preset; state.modules=starterModules(preset); state.selectedId=null;
@@ -1090,7 +1109,7 @@ function init(){
   resizeCanvas(); updateInspector(); hideHintSoon();   // resizeCanvas 内部 render() 会建房间+模块并绘制
 
   document.getElementById('btnReset').onclick=resetCamera;
-  document.getElementById('btnPreset').onclick=()=>applyPreset(state.preset==='tower'?'counter':'tower');
+  document.getElementById('btnPreset').onclick=()=>{ const ORDER=['counter','tower','embed']; applyPreset(ORDER[(ORDER.indexOf(state.preset)+1)%ORDER.length]); };
   updatePresetBtn();
   document.getElementById('btnPng').onclick=exportPNG;
   document.getElementById('btnClear').onclick=()=>{ if(confirm('清空所有构件？房间保留。')){ state.modules=[]; state.selectedId=null; commit(); } };
